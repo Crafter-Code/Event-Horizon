@@ -26,75 +26,22 @@ The analysis, writing, and fact-checking agents have separate roles and share ev
 
 Use the numbered navigation on the hosted project. Start with English and Analyst mode. Live episodes appear as the match progresses; the full replay remains available after full time. Viewer access is public. Editorial mutation controls require an operator account and are not part of anonymous viewer access.
 
-### 01. One match, understood
+Open the website and follow sections 01–14. Start with English and Analyst mode. Operator access is required for server-side tests and editorial changes.
 
-- **What to do:** Change **Viewing mode** between Fan, Analyst, and Player Focus. Select a favourite team and player. Check the visible feedback and the different depth of explanations. Reload to confirm saved preferences.
-- **What to check:** Different viewing modes use the same match facts with different levels of detail; the selected preferences remain after reload.
-
-### 02. Live match & statistics
-
-- **What to do:** Watch the clock and players advance. Check passes, shots, possession, and pressure. Compare **Alongside the match** and **Over the image** in section 1.
-- **What to check:** The match clock, player positions, and calculated statistics update together.
-
-### 03. Reproduce the match
-
-- **What to do:** Open **Replay Lab**. Inspect the repeatability explanation. Starting a new server-side comparison requires operator access. For an independent local comparison, run `python3 -B -c "from reproducibility_lab import verify; print(verify(42,30))"`. Matching seeds and scenarios must produce matching event hashes.
-- **What to check:** Identical seeds and scenarios produce identical event hashes. A server-side test requires operator access.
-
-### 04. Key moments & review
-
-- **What to do:** Select a shot, goal, pressure change, or rhythm change in **How the game unfolded**. The selected breakdown stays open while live play continues. **Broadcast desk** is the editorial view; publishing and suppression require operator access.
-- **What to check:** A selected moment can be inspected without losing it when another live event arrives.
-
-### 05. From event to insight
-
-- **What to do:** Select a recent completed pass. Check the route, distance, forward/backward progress, and completed-pass counter. Open **Verify the data path**. **Pin episode** holds the selection; **Follow live play** returns to live updates.
-- **What to check:** The displayed explanation can be traced to the selected pass and its calculated metrics.
-
-### 06. One episode, three formats
-
-- **What to do:** Compare Studio, Broadcast, and Streaming cards. Their wording and length differ while the shared fact fingerprint stays the same.
-- **What to check:** Three presentation formats share the same underlying facts.
-
-### 07. Five connected stages
-
-- **What to do:** Inspect Event received, Context calculated, Meaning explained, Screen display, and Your perspective. In **Why this moment?**, select an episode, step through its event sequence, and inspect the source links. Arrows show earlier passes in the attack; player positions belong to the selected frame.
-- **What to check:** Every stage connects an event to a viewer-facing explanation with inspectable evidence.
-
-### 08. Made for your perspective
-
-- **What to do:** Open **Statistics on screen** and change the selected metrics. Compare fan and analyst views of the same period. Select Player Focus in section 1 to inspect the chosen player's contribution.
-- **What to check:** The selected audience mode, player, and metrics change the presentation.
-
-### 09. Players, patterns & performance
-
-- **What to do:** Inspect player identification, pass distance, accuracy, difficulty, and ball-speed estimates. Open **How recognition is checked** to see measured quality. Inspect rhythm and match-story panels and their sources. Recognition is evaluated on the project's fixed synthetic camera, not real broadcast footage.
-- **What to check:** Metrics and recognition-quality results are visible, with the synthetic-camera limitation made clear.
-
-### 10. Synthetic match laboratory
-
-- **What to do:** Inspect the generator passport, seed, scenario, and consistency checks. Open **Checks · JSON** or download the reference clip with its annotations and predictions. Only synthetic football data is used.
-- **What to check:** The match has reproducible generator settings and inspectable synthetic-data checks.
-
-### 11. One match, seven languages
-
-- **What to do:** Expand **One match · seven explanation languages** and change the explanation language. The main language selector in section 1 changes the overall interface. Supported languages: English, Czech, German, French, Italian, Spanish, and Portuguese.
-- **What to check:** The selected language changes the story; the main selector also changes the interface.
-
-### 12. Compare the same facts
-
-- **What to do:** Expand **One episode · three languages**. Check that the same episode, numbers, fact fingerprint, and evidence links are preserved across translations. This panel needs an available key episode.
-- **What to check:** Translations retain the same episode, numerical facts, and source references.
-
-### 13. Azure & trustworthy AI
-
-- **What to do:** Open **Inspect agent evidence**. Look for a verified Foundry result, the separate agent stages, and application to a current episode. A pending or fallback state must not be described as verified. Open **Materials and display latency** for timing evidence. Fallback preserves computed match facts when an AI run fails verification.
-- **What to check:** A successful AI result shows distinct analysis, writing, and verification stages. Pending and fallback results remain explicitly labeled.
-
-### 14. The complete match
-
-- **What to do:** Open **Open full replay**. Test Play, Pause, speed, and the match timeline. Use **Go to final summary** to inspect the complete 90-minute recap and linked episodes. Compare viewing modes and languages against the same replay facts.
-- **What to check:** The full 90-minute replay and final recap are available independently of the live match clock.
+1. **One match, understood:** Choose Fan, Analyst, or Player Focus, then select your favourite team and player.  
+2. **Live match & statistics:** Watch the match and live stats; compare the alongside and overlay display modes.  
+3. **Reproduce the match:** Open Replay Lab to explore repeatability; operator access is required to run a new comparison.  
+4. **Key moments & review:** Select a key moment to inspect it; use Broadcast desk with operator access to review and publish cards.  
+5. **From event to insight:** Select a completed pass and inspect its route, distance, progress, and source data.  
+6. **One episode, three formats:** Compare Studio, Broadcast, and Streaming cards based on the same facts.  
+7. **Five connected stages:** Follow the five stages, then open “Why this moment?” to explore the event sequence and evidence.  
+8. **Made for your perspective:** Change the visible statistics and compare audience modes and player-focused stories.  
+9. **Players, patterns & performance:** Explore player tracking, pass quality, ball speed, match patterns, and recognition results.  
+10. **Synthetic match laboratory:** Inspect the generator settings, data checks, and reference video.  
+11. **One match, seven languages:** Switch between seven languages to compare the interface and match stories.  
+12. **Compare the same facts:** Open the three-language comparison and check that numbers and source links remain unchanged.  
+13. **Azure & trustworthy AI:** Inspect the agent evidence, verification status, and event-to-display latency.  
+14. **The complete match:** Open the full replay, try playback controls, and explore the final recap and linked moments.  
 
 ## Run locally
 
