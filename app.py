@@ -117,7 +117,7 @@ class MatchSession:
                     self.generator_checks.validate(self.match)
                     self.pipeline.validate_next(self.match)
                     if pending is not None:pending['validated'] = True
-                if self.journal:
+                if self.journal and not (pending and pending.get('archived')):
                     self.journal.append(self.run_key, self.match.events[self.saved_count:])
                 self.saved_count = len(self.match.events)
                 self.pipeline.advance(self.match, active)
@@ -187,6 +187,9 @@ class MatchSession:
             pending = self.pending_ingress
             if pending is None or fingerprint != pending['digest']:
                 raise IngressConflict('Batch is not the current pending source tick')
+        if self.journal and hasattr(self.journal,'append_batch') and not pending.get('archived'):
+            self.journal.append_batch(payload['run_key'],payload['events'])
+            pending['archived']=True
         while True:
             with self.lock:
                 if self.pending_ingress is not pending:
@@ -199,6 +202,7 @@ class MatchSession:
                     return {**self.last_ingress,'duplicate':False}
                 generated=self.match
                 item=pending['ticks'][pending['index']]
+                item['archived']=pending.get('archived',False)
                 try:
                     self.match=item['match']
                     with observe.span('eh.ingress.commit',run_key=self.run_key,tick=self.match.tick):

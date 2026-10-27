@@ -6,6 +6,7 @@
    
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from uuid import uuid4
 from cloud_contract import encode
@@ -43,6 +44,12 @@ class BlobEventJournal:
 
     def append(self, key, events):
         for event in events:self._put(f'{key}/events/{event["id"]:09d}.json',event)
+
+    def append_batch(self, key, events):
+        if not events:return
+        with ThreadPoolExecutor(max_workers=min(4,len(events))) as executor:
+            futures=[executor.submit(self._put,f'{key}/events/{event["id"]:09d}.json',event) for event in events]
+            for future in futures:future.result()
 
     def find(self, key, event_id):
         from azure.core.exceptions import ResourceNotFoundError, AzureError

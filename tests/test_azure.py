@@ -56,6 +56,25 @@ class IngressTests(unittest.TestCase):
         self.assertEqual(live.camera.recognizer.snapshot(),local.camera.recognizer.snapshot())
         self.assertEqual(live.camera.evaluation.snapshot(),local.camera.evaluation.snapshot())
 
+    def test_batch_archive_failure_publishes_nothing_and_retries_exactly(self):
+        with tempfile.TemporaryDirectory() as folder:
+            journal=EventJournal(Path(folder)/'events.db')
+            live=self.make(journal)
+            calls=[]
+            def archive(key,events):
+                calls.append(deepcopy(events))
+                if len(calls)==1:raise OSError('Archive unavailable')
+                journal.append(key,events)
+            journal.append_batch=archive
+            self.clock.now=2;live.pump()
+            self.assertEqual(live.pipeline.tick,0)
+            self.assertEqual(live.confirmed_frame['clock'],0)
+            self.clock.now=2.3;live.pump()
+            self.assertEqual(live.pipeline.tick,40)
+            self.assertEqual(calls[0],calls[1])
+            self.assertEqual(journal.runs()[0]['event_count'],live.confirmed_count)
+            journal.close()
+
     def test_batched_lost_ack_does_not_repeat_metrics(self):
         live=self.make();self.clock.now=2;self.relay.drop=True;live.pump()
         before=deepcopy(live.confirmed_frame)
