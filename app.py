@@ -338,7 +338,9 @@ class MatchSession:
             data.update(run_id=self.run_id, reset=reset,
                         settings=self.match.settings.as_dict(), event_count=count,
                         event_hash=self.confirmed_hash,
-                        events=deepcopy(self.pipeline.events[0 if reset else after:count]))
+                        events=([{'id':event['id'],'time':event['time']}
+                                 for event in self.pipeline.events[0 if reset else after:count]] if compact
+                                else deepcopy(self.pipeline.events[0 if reset else after:count])))
             data['metadata'] = named_metadata(self.match.metadata())
             data['generator'] = self.generator_checks.snapshot(
                 self.confirmed_frame['clock'],self.camera.evaluation.verdicts if self.camera else None)

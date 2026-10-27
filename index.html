@@ -887,6 +887,7 @@
   }
   document.querySelector('#match-settings').onsubmit = event => {event.preventDefault(); restartMatch(false);};
   document.querySelector('#replay-match').onclick = () => restartMatch(true);
+  let pollFailures = 0;
   async function poll() {
     const epoch = requestEpoch;
     try {
@@ -902,15 +903,18 @@
       if (runId !== null) query.set('run', runId);
       query.set('metrics',prefs.metrics.join(','));
       const requestStarted=performance.now();
-      const response = await fetch('/state?' + query, {cache: 'no-store', signal: AbortSignal.timeout(2500)});
+      const response = await fetch('/state?' + query, {cache: 'no-store', signal: AbortSignal.timeout(15000)});
       if (!response.ok) throw Error('HTTP ' + response.status);
       const next = await response.json();
       window.EHRequestTiming={requestMs:performance.now()-requestStarted,receivedAt:performance.now()};
-      if (epoch === requestEpoch) applyState(next);
+      if (epoch === requestEpoch) {applyState(next); pollFailures = 0;}
     } catch (error) {
-      if (epoch === requestEpoch && !restarting) document.querySelector('#connection').hidden = false;
+      if (epoch === requestEpoch && !restarting) {
+        pollFailures += 1;
+        document.querySelector('#connection').hidden = false;
+      }
     } finally {
-      setTimeout(poll, 100);
+      setTimeout(poll, pollFailures ? Math.min(8000, 1000 * 2 ** Math.min(pollFailures - 1, 3)) : 250);
     }
   }
   function line(x1, y1, x2, y2) {

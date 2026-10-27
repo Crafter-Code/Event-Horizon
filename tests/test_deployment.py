@@ -61,6 +61,18 @@ class OperatorHttpTests(unittest.TestCase):
             self.assertNotIn(self.password.encode(),body)
         self.assertIn(b'data-operator-required="true"',self.request('/')[2])
 
+    def test_compact_bootstrap_preserves_event_sequence_without_full_event_payloads(self):
+        from simulation import GeneratorSettings
+        app.session = app.MatchSession(GeneratorSettings(2), wall_clock=lambda:0)
+        app.session.pump(10)
+        compact = json.loads(self.request('/state?compact=1')[2])
+        full = json.loads(self.request('/state')[2])
+        self.assertGreater(len(compact['events']), 0)
+        self.assertEqual(compact['event_count'], full['event_count'])
+        self.assertEqual(compact['events'], [{'id':e['id'],'time':e['time']} for e in full['events']])
+        self.assertTrue(all(set(e)=={'id','time'} for e in compact['events']))
+        self.assertTrue(any('kind' in e for e in full['events']))
+
     def test_journey_is_public_read_only_and_does_not_leak_draft_caption(self):
         from simulation import GeneratorSettings
         app.session = app.MatchSession(GeneratorSettings(2), wall_clock=lambda:0)
