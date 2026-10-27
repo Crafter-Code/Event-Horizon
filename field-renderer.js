@@ -4,25 +4,37 @@
  const colors=['#73ceff','#ff8998'];let serial=0;
                                                                                       
  function createMotion(clock=()=>performance.now()){
-  let from=null,to=null,key=null,began=0,duration=160,lastArrival=0;
+  let frames=[],key=null,delay=300,playhead=null,intervals=[];
   const clone=o=>o?{...o,players:(o.players||[]).map(p=>({...p})),ball:Array.isArray(o.ball)?{x:o.ball[0],y:o.ball[1]}:o.ball?{...o.ball}:null}:null;
   function sample(at=clock()){
-   if(!to)return null;if(!from||duration===0)return clone(to);
-   const a=Math.max(0,Math.min(1,(at-began)/duration)),old=new Map((from.players||[]).map(p=>[p.team+':'+p.number,p]));
-   const lerp=(x,y)=>x+(y-x)*a,dt=Math.max(.05,to.time-from.time);
-   const players=(to.players||[]).map(p=>{const q=old.get(p.team+':'+p.number);return !q||Math.hypot(p.x-q.x,p.y-q.y)>dt*12+2?{...p}:{...p,x:lerp(q.x,p.x),y:lerp(q.y,p.y)};});
+   if(!frames.length)return null;
+   const latest=frames[frames.length-1];
+   const target=Math.min(latest.at,at-delay);
+   playhead=Math.max(frames[0].at,playhead??frames[0].at,target);
+   while(frames.length>2&&frames[1].at<=playhead)frames.shift();
+   const first=frames[0],next=frames[1];
+   if(!next)return clone(first.value);
+   const from=first.value,to=next.value,a=Math.max(0,Math.min(1,(playhead-first.at)/Math.max(1,next.at-first.at)));
+   const old=new Map(from.players.map(p=>[p.team+':'+p.number,p])),dt=Math.max(.05,to.time-from.time),lerp=(x,y)=>x+(y-x)*a;
+   const players=to.players.map(p=>{const q=old.get(p.team+':'+p.number);return !q||Math.hypot(p.x-q.x,p.y-q.y)>dt*12+2?{...p}:{...p,x:lerp(q.x,p.x),y:lerp(q.y,p.y)};});
    let ball=to.ball?{...to.ball}:null;
    if(ball&&from.ball&&Math.hypot(ball.x-from.ball.x,ball.y-from.ball.y)<=dt*50+2)ball={...ball,x:lerp(from.ball.x,ball.x),y:lerp(from.ball.y,ball.y)};
    return {...to,time:lerp(from.time,to.time),players,ball};
   }
   function push(observation,identity,options={}){
    if(!observation||!Number.isFinite(observation.time))return;
-   const now=clock(),reset=options.snap||!to||identity!==key||observation.time<to.time||observation.period!==to.period||observation.in_play!==to.in_play||observation.time-to.time>1||now-lastArrival>1500;
-   if(!reset&&observation.frame_id===to.frame_id&&observation.time===to.time)return;
-   from=reset?clone(observation):sample(now);to=clone(observation);key=identity;
-   duration=reset?0:Math.max(90,Math.min(420,Math.max(now-lastArrival,duration*.9)*1.05));began=now;lastArrival=now;
+   const now=clock(),previous=frames[frames.length-1],old=previous?.value;
+   const reset=options.snap||!old||identity!==key||observation.time<old.time||observation.period!==old.period||observation.in_play!==old.in_play||observation.time-old.time>5||now-previous.at>10000;
+   if(!reset&&observation.frame_id===old.frame_id&&observation.time===old.time)return;
+   if(reset){frames=[];intervals=[];delay=300;playhead=null;}
+   else{
+    intervals.push(Math.max(1,now-previous.at));if(intervals.length>12)intervals.shift();
+    const sorted=[...intervals].sort((a,b)=>a-b),desired=Math.max(250,Math.min(2000,sorted[Math.floor((sorted.length-1)*.9)]*1.25));
+    delay=desired>delay?desired:delay*.95+desired*.05;
+   }
+   frames.push({at:now,value:clone(observation)});if(frames.length>64)frames.shift();key=identity;
   }
-  return {push,sample,reset(){from=to=null;key=null;},get sourceTime(){return to?.time;}};
+  return {push,sample,reset(){frames=[];key=null;playhead=null;intervals=[];},get sourceTime(){return frames[frames.length-1]?.value.time;}};
  }
  function routeGeometry(origin,end,padding=1.4){
   if(!Array.isArray(origin)||!Array.isArray(end)||origin.length!==2||end.length!==2||![...origin,...end].every(Number.isFinite))return null;
