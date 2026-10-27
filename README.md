@@ -14,9 +14,7 @@ Explainable AI match intelligence built on Azure. Event Horizon turns synthetic 
 
 **Planned hosting period: through 10 November 2026 at 23:59 Pacific Standard Time (UTC−08:00), equivalent to 11 November 2026 at 07:59 UTC.** Use the public website link above throughout this period.
 
-Azure was checked on **27 October 2026**: the application was running, public ingress was enabled, the subscription was enabled, the minimum replica count was one, and the readiness endpoint returned HTTP 200 with `status: ok`. These checks confirm the current deployment; they do not guarantee uninterrupted future uptime, available credit, or Azure service health. The site must remain funded and enabled until judging ends.
-
-**Access:** match viewing and public evidence do not require an account. Server-side restart, new Replay Lab comparisons, and editorial publishing/suppression require operator access. Judges who need these controls must receive separate test credentials through the submission's testing instructions. Do not publish credentials in this repository.
+Azure was checked on **27 October 2026**: the application was running, public ingress was enabled, the subscription was enabled, the minimum replica count was one, and the readiness endpoint returned HTTP 200 with `status: ok`.
 
 ## Architecture
 
