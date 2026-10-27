@@ -16,6 +16,17 @@ Explainable AI match intelligence built on Azure. Event Horizon turns synthetic 
 
 Azure was checked on **27 October 2026**: the application was running, public ingress was enabled, the subscription was enabled, the minimum replica count was one, and the readiness endpoint returned HTTP 200 with `status: ok`.
 
+## Operator access for judges
+
+Public viewing needs no account. To test editorial actions and reproducibility controls:
+
+1. Open [the editor sign-in page](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/editor).
+2. Enter username **editor** and the application password supplied in the private testing instructions.
+3. Review a completed moment, confirm its caption, select it for broadcast, or hold it.
+4. Open [Replay Lab controls](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/replay-lab/control), using the same application credentials if prompted, and run a comparison.
+
+The submission's private testing instructions must include the password. It is intentionally excluded from this public repository. This is an application-only demonstration account; judges do not need access to Azure, Microsoft, or GitHub accounts. Operator changes affect the shared demo. A live-match restart resets the current run for all viewers; [the complete replay](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/demo) remains independent.
+
 ## Architecture
 
 Synthetic simulator and video frames → Azure Functions event relay → validated match state and statistics → Microsoft Foundry agents through Microsoft Agent Framework → verified narrative → personalized screen cards and recap.
