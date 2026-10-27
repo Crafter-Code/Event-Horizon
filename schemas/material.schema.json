@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "eh-material-record-1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "sequence",
+    "material_id",
+    "episode_id",
+    "revision",
+    "match_id",
+    "run_key",
+    "time",
+    "available_at",
+    "event",
+    "significance",
+    "evidence_ids",
+    "facts",
+    "fact_fingerprint",
+    "audience",
+    "language"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "eh-material-record-1"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "material_id": {
+      "type": "string"
+    },
+    "episode_id": {
+      "type": "string"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "run_key": {
+      "type": "string"
+    },
+    "time": {
+      "type": "number",
+      "minimum": 0
+    },
+    "available_at": {
+      "type": "number",
+      "minimum": 0
+    },
+    "event": {
+      "type": "string"
+    },
+    "significance": {
+      "type": "string"
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "uniqueItems": true
+    },
+    "facts": {
+      "type": "object"
+    },
+    "fact_fingerprint": {
+      "type": "string"
+    },
+    "audience": {
+      "enum": [
+        "fan",
+        "analyst",
+        "player"
+      ]
+    },
+    "language": {
+      "enum": [
+        "en",
+        "cs",
+        "de"
+      ]
+    },
+    "show_at": {
+      "type": "number",
+      "minimum": 0
+    },
+    "remove_at": {
+      "type": "number",
+      "minimum": 0
+    },
+    "timebase": {
+      "type": "object"
+    },
+    "text": {
+      "type": "object"
+    },
+    "source_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "uniqueItems": true
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,14 @@
+**
+!/*.py
+!/*.js
+!/*.html
+!/*.css
+!/global-locales.json
+!/requirements-azure.lock.txt
+!/data/
+!/data/full-match.sqlite3
+!/scenarios/
+!/scenarios/*.json
+!/schemas/
+!/schemas/*.json
+.DS_Store

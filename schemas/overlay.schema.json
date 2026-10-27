@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "eh-overlay-1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "overlay_id",
+    "match_id",
+    "run_key",
+    "episode_id",
+    "material_id",
+    "revision",
+    "show_at",
+    "remove_at",
+    "timebase",
+    "layer",
+    "text",
+    "metrics",
+    "source_event_ids",
+    "fact_fingerprint"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "eh-overlay-1"
+    },
+    "overlay_id": {
+      "type": "string"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "run_key": {
+      "type": "string"
+    },
+    "episode_id": {
+      "type": "string"
+    },
+    "material_id": {
+      "type": "string"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "show_at": {
+      "type": "number",
+      "minimum": 0
+    },
+    "remove_at": {
+      "type": "number",
+      "minimum": 0
+    },
+    "timebase": {
+      "const": {
+        "kind": "match_clock",
+        "unit": "seconds",
+        "origin": 0
+      }
+    },
+    "layer": {
+      "type": "string"
+    },
+    "text": {
+      "type": "object",
+      "required": [
+        "event",
+        "significance",
+        "evidence"
+      ],
+      "properties": {
+        "event": {
+          "type": "string"
+        },
+        "significance": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "string"
+        }
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "source_event_ids": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "uniqueItems": true
+    },
+    "fact_fingerprint": {
+      "type": "string"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "time": {
+      "type": "number",
+      "minimum": 0
+    },
+    "available_at": {
+      "type": "number",
+      "minimum": 0
+    },
+    "facts": {
+      "type": "object"
+    },
+    "evidence_ids": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "uniqueItems": true
+    }
+  },
+  "additionalProperties": true
+}

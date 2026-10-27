@@ -1,0 +1,201 @@
+{
+  "id": "counterattack",
+  "version": 1,
+  "title": {
+    "en": "Fast counterattack",
+    "cs": "Rychlý protiútok",
+    "de": "Schneller Konter"
+  },
+  "description": {
+    "en": "Blue start a transition after regaining the ball. Two forward passes and a shot attempt; the trajectory decides the outcome.",
+    "cs": "Modří zahajují přechod po zisku míče. Dvě přihrávky vpřed a pokus o střelu; výsledek určí dráha míče.",
+    "de": "Blau schaltet nach dem Ballgewinn um. Zwei Vorwärtspässe und ein Schussversuch; die Flugbahn entscheidet über den Ausgang."
+  },
+  "initial": {
+    "owner": "0:7",
+    "ball": [
+      49,
+      34
+    ],
+    "players": [
+      {
+        "id": "0:1",
+        "x": 5,
+        "y": 34
+      },
+      {
+        "id": "0:2",
+        "x": 25,
+        "y": 8
+      },
+      {
+        "id": "0:3",
+        "x": 23,
+        "y": 25
+      },
+      {
+        "id": "0:4",
+        "x": 23,
+        "y": 43
+      },
+      {
+        "id": "0:5",
+        "x": 25,
+        "y": 60
+      },
+      {
+        "id": "0:6",
+        "x": 43,
+        "y": 15
+      },
+      {
+        "id": "0:7",
+        "x": 48.35,
+        "y": 34
+      },
+      {
+        "id": "0:8",
+        "x": 43,
+        "y": 53
+      },
+      {
+        "id": "0:9",
+        "x": 86,
+        "y": 32
+      },
+      {
+        "id": "0:10",
+        "x": 67,
+        "y": 25
+      },
+      {
+        "id": "0:11",
+        "x": 43,
+        "y": 59
+      },
+      {
+        "id": "1:1",
+        "x": 102,
+        "y": 34
+      },
+      {
+        "id": "1:2",
+        "x": 96,
+        "y": 8
+      },
+      {
+        "id": "1:3",
+        "x": 44,
+        "y": 17
+      },
+      {
+        "id": "1:4",
+        "x": 43,
+        "y": 48
+      },
+      {
+        "id": "1:5",
+        "x": 96,
+        "y": 60
+      },
+      {
+        "id": "1:6",
+        "x": 40,
+        "y": 15
+      },
+      {
+        "id": "1:7",
+        "x": 40,
+        "y": 34
+      },
+      {
+        "id": "1:8",
+        "x": 40,
+        "y": 53
+      },
+      {
+        "id": "1:9",
+        "x": 30,
+        "y": 9
+      },
+      {
+        "id": "1:10",
+        "x": 32,
+        "y": 34
+      },
+      {
+        "id": "1:11",
+        "x": 30,
+        "y": 59
+      }
+    ]
+  },
+  "policy": {
+    "chasers": 1,
+    "closing_gap_m": 3,
+    "defending_shift_m": -8,
+    "tackle_rate": 0.25,
+    "forward_weight": 0.6,
+    "decision_scale": 0.65,
+    "closing_mps": 2.7
+  },
+  "sequence": [
+    {
+      "actor": "0:7",
+      "action": "pass",
+      "receiver": "0:10",
+      "after_control_s": 0.65
+    },
+    {
+      "actor": "0:10",
+      "action": "pass",
+      "receiver": "0:9",
+      "after_control_s": 0.45
+    },
+    {
+      "actor": "0:9",
+      "action": "shot",
+      "after_control_s": 0.45
+    }
+  ],
+  "expectations": [
+    {
+      "id": "first",
+      "kind": "pass_completed",
+      "team": 0,
+      "actor": "0:7",
+      "by_s": 6,
+      "label": {
+        "en": "First pass advances the ball",
+        "cs": "První přihrávka posune míč vpřed",
+        "de": "Der erste Pass bringt den Ball nach vorne"
+      }
+    },
+    {
+      "id": "second",
+      "kind": "pass_completed",
+      "team": 0,
+      "actor": "0:10",
+      "after": "first",
+      "by_s": 9,
+      "label": {
+        "en": "Second pass continues the attack",
+        "cs": "Druhá přihrávka pokračuje v útoku",
+        "de": "Der zweite Pass setzt den Angriff fort"
+      }
+    },
+    {
+      "id": "shot",
+      "kind": "shot",
+      "team": 0,
+      "actor": "0:9",
+      "after": "second",
+      "by_s": 12,
+      "label": {
+        "en": "The attack ends with a shot",
+        "cs": "Útok končí střelou",
+        "de": "Der Angriff endet mit einem Schuss"
+      }
+    }
+  ]
+}

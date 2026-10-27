@@ -1,0 +1,328 @@
+                                                                                                    
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) {
+  --bg:#091219; --panel:#111f28; --ink:#edf5f7; --muted:#a6b8c2;
+  --lime:#b7f37c; --line:#2b424e; --red:#ffb3a8;
+  color:var(--ink); background:var(--bg); line-height:1.55;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) main {
+  max-width:1440px; padding:32px 36px 40px; margin-inline:auto;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) header {
+  border-bottom:1px solid #2b424e; gap:12px 24px; flex-wrap:wrap;
+}
+:is(.eh-demo,.eh-journey) header {padding:0 0 22px;margin-bottom:32px}
+:is(.eh-studio,body:has(main.eh-replay))>header {padding:20px max(36px,calc((100vw - 1368px)/2))}
+:is(.eh-demo,.eh-studio,body:has(main.eh-replay)) .brand {
+  font-size:14px;letter-spacing:.14em;font-weight:800;color:#edf5f7;white-space:nowrap;
+}
+:is(.eh-studio,body:has(main.eh-replay)) .brand span {display:inline;color:#b7f37c}
+body:has(main.eh-replay) .brand span::before {content:' '}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) header a {
+  display:inline-flex;align-items:center;min-height:36px;font-size:12px;
+  color:#c3d3dc;text-decoration:none;font-weight:550;border-bottom:1px solid transparent;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) header a:hover {
+  color:#b7f37c;border-bottom-color:#b7f37c;
+}
+:is(.eh-studio,body:has(main.eh-replay)) header nav {gap:8px 24px;min-width:0}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) h1 {
+  font-weight:650;letter-spacing:-.045em;line-height:1.08;text-wrap:balance;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) h2 {
+  font-weight:620;letter-spacing:-.025em;line-height:1.25;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.eyebrow,.kicker,.fact,.role) {
+  color:#b7f37c;font-size:11px;letter-spacing:.13em;font-weight:650;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.muted,.source-note,.hash,footer,.footer) {
+  color:#a6b8c2;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.panel,.proof,.result,.lane) {
+  background:#111f28;border-color:#2b424e;border-radius:12px;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.panel,.proof,.lane) {padding:24px}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.badge,.chip,.tag) {
+  background:#142820;color:#c5e7ad;border-color:#3c5746;font-size:11px;
+  letter-spacing:.025em;line-height:1.5;max-width:100%;white-space:normal;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.hash,code,pre) {
+  overflow-wrap:anywhere;word-break:normal;font-size:11px;line-height:1.7;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) footer,
+.eh-journey .footer {
+  border-top:1px solid #2b424e;padding-top:22px;margin-top:32px;font-size:12px;line-height:1.75;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.intro p,p.intro) {font-size:15px;line-height:1.7}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(select,input:not([type=range]):not([type=checkbox])) {
+  max-width:100%;min-width:0;
+}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(input[type=range],input[type=checkbox]) {accent-color:#b7f37c}
+:is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.grid,.workbench,.top,.stack,.lanes,.foot)>* {min-width:0}
+
+                                                                                             
+.eh-demo header .brand {margin-right:auto}
+.eh-demo .intro {max-width:940px;margin-bottom:28px}
+.eh-demo h1 {font-size:clamp(32px,3.9vw,54px);max-width:880px}
+.eh-demo .intro p {max-width:780px;margin:16px 0}
+.eh-demo .toolbar {
+  gap:14px;margin:24px 0;padding:18px 20px;background:#111f28;
+  border:1px solid #2b424e;border-radius:12px;
+}
+.eh-demo .toolbar label {flex:1 1 150px;font-size:12px;color:#b9cad3;min-width:0}
+.eh-demo .toolbar select {width:100%;max-width:none;font-size:13px}
+.eh-demo .grid {grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:20px}
+.eh-demo .grid>aside {align-self:stretch;border-top:2px solid #b7f37c}
+.eh-demo #demo-card-title {margin:12px 0;font-size:25px;line-height:1.25}
+.eh-demo #demo-card-what,.eh-demo #demo-card-why {font-size:14px;line-height:1.75}
+.eh-demo .pitch-wrap {border:1px solid #315947;border-radius:8px}
+.eh-demo .scoreline {margin-bottom:18px;font-size:13px;font-weight:650;flex-wrap:wrap}
+.eh-demo .scoreline strong {font-size:32px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+.eh-demo #demo-team0 {color:#8ecfff}
+.eh-demo #demo-team1 {color:#ffa9b6}
+.eh-demo .clock {color:#d5e2e8;background:#1b303b;border:1px solid #2b424e;border-radius:6px;padding:5px 9px;font-size:12px}
+.eh-demo .controls {gap:10px;margin:16px 0}
+.eh-demo .controls label {color:#b9cad3;display:inline-flex;align-items:center;gap:7px}
+.eh-demo .controls input[type=checkbox] {width:17px;height:17px}
+.eh-demo #demo-play {background:#b7f37c;border-color:#b7f37c;color:#102018;font-weight:700;min-width:88px}
+.eh-demo #demo-at {margin-left:auto;color:#b9cad3}
+.eh-demo .scrub {min-height:24px;margin:0}
+.eh-demo .stat {padding:13px 12px;border:1px solid #2b424e;background:#162833;color:#b9cad3}
+.eh-demo .stat strong {font-size:21px;color:#edf5f7;margin-top:8px;font-variant-numeric:tabular-nums}
+.eh-demo .sources a {color:#b7dbe9;background:#162833;border-color:#385361;min-height:30px;padding:6px 9px;display:inline-flex;align-items:center}
+.eh-demo .sequence {border-color:#2b424e}
+.eh-demo :is(.sequence button,.episode-button) {background:#162833;border-color:#2b424e;line-height:1.6;padding:12px 14px}
+.eh-demo :is(.compare,.lens-grid) {gap:14px;margin-top:22px}
+.eh-demo :is(.compare article,.lens-grid article) {padding:19px;background:#0d1921;border:1px solid #2b424e;border-radius:9px}
+.eh-demo :is(.compare p,.lens-grid p) {font-size:13px;line-height:1.75}
+.eh-demo :is(.compare,.lens-grid) h3 {font-size:17px;margin:12px 0;line-height:1.35}
+.eh-demo .lens-caption {color:#d5e5df;border-color:#b7f37c;padding-left:12px}
+.eh-demo .timeline {gap:9px}
+.eh-demo .timeline button {font-size:12px;min-height:40px;padding:9px 12px;background:#162833;line-height:1.45}
+.eh-demo .timeline button.goal {background:#2b2a1b;border-color:#8c7f48;color:#f7df91}
+.eh-demo .proof-grid {gap:14px}
+.eh-demo .proof-grid article {background:#162833;border:1px solid #2b424e;padding:18px;border-radius:9px;min-width:0}
+.eh-demo .proof-grid b {font-size:28px;font-weight:650;color:#edf5f7;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.eh-demo .summary-box {border-color:#496945;background:linear-gradient(110deg,#172b26,#111f28)}
+.eh-demo .summary-box:focus-visible {outline:3px solid #b7f37c;outline-offset:4px}
+.eh-demo details {padding-top:12px;border-top:1px solid #2b424e;margin-top:18px}
+.eh-demo summary {padding:8px 0;min-height:40px;color:#c9d8df;line-height:1.5}
+.eh-demo :is(th,td) {padding:12px 9px;border-color:#2b424e}
+.eh-demo th {color:#b9cad3;font-weight:600}
+.eh-demo .checks {font-size:13px;line-height:1.9}
+.eh-demo .proof-note {color:#e0c897}
+.eh-demo .error {background:#34291e;color:#f3d3ac;border-color:#e4b47f;border-radius:7px}
+.eh-demo .badge.warning {background:#34291e;color:#f3d3ac;border-color:#806244}
+
+                                                                                  
+.eh-studio .intro {margin:6px 0 30px}
+.eh-studio h1 {font-size:clamp(30px,3.5vw,49px)}
+.eh-studio .workbench {grid-template-columns:minmax(0,1fr) 320px;gap:24px}
+.eh-studio .tabs {gap:6px}
+.eh-studio .tabs button {background:#111f28;border-color:#2b424e;font-size:12px;padding:10px 13px}
+.eh-studio .tabs button[aria-pressed=true] {background:#b7f37c;color:#102018;border-color:#b7f37c;font-weight:650}
+.eh-studio .viewport {border-color:#2b424e;background:#071015;box-shadow:0 12px 40px #0002}
+.eh-studio .screen {background:radial-gradient(ellipse at 42% 30%,#173c35,#0a1a22)}
+.eh-studio .scorebug {background:#08141bef;border-color:#b7f37c;color:#edf5f7}
+.eh-studio .scorebug time {color:#c7eea8}
+.eh-studio .replay-tag {color:#b4c8ce}
+.eh-studio .on-picture {border-color:#b7f37c}
+.eh-studio .on-picture h2 {color:#edf5f7}
+.eh-studio .on-picture p {color:#c5d6dc}
+.eh-studio .on-picture .episode-at {color:#a6b8c2}
+.eh-studio .screen[data-layout=broadcast] .on-picture {background:#08141bf2;border-color:#b7f37c}
+.eh-studio .screen-stats {border-color:#3b555d}
+.eh-studio .screen-stats span {color:#b0c4cc}
+.eh-studio .transport {padding:19px 20px;background:#111f28;border-color:#2b424e}
+.eh-studio .transport-top label,.eh-studio .guide-toggle {color:#b9cad3}
+.eh-studio #play {background:#b7f37c;border-color:#b7f37c;color:#102018;font-weight:700;min-width:80px}
+.eh-studio #status {color:#b7f37c}
+.eh-studio .time-note {color:#a6b8c2;flex-wrap:wrap}
+.eh-studio .proof {border-top:2px solid #b7f37c}
+.eh-studio .proof .kicker {color:#b7f37c}
+.eh-studio .proof h2 {font-size:23px;margin:12px 0}
+.eh-studio .audit {font-size:13px}
+.eh-studio .audit li {padding:12px 0;border-color:#2b424e;align-items:flex-start}
+.eh-studio .audit li::before {color:#b7f37c}
+.eh-studio .audit li.failed::before {color:#ffb3a8}
+.eh-studio .source-note {font-size:12px;line-height:1.75}
+.eh-studio .actions {gap:10px}
+.eh-studio .actions a {min-height:32px;display:inline-flex;align-items:center}
+.eh-studio .chain {gap:10px;margin-top:20px}
+.eh-studio .chain li {min-width:0;flex:1 1 150px}
+.eh-studio .chain a {background:#111f28;border-color:#2b424e;font-size:12px;gap:9px;padding:16px;overflow-wrap:anywhere}
+.eh-studio .chain a:hover {background:#162833;border-color:#7b9d6e}
+.eh-studio .chain a b {color:#d8eee1;font-weight:650}
+.eh-studio .chain a span {color:#a6b8c2}
+.eh-studio .evidence {margin-top:32px}
+.eh-studio #episode {flex:1 1 220px;max-width:100%;width:auto}
+.eh-studio .notice {background:#34291e;color:#f3d3ac;border-radius:7px}
+
+                                                                                       
+.eh-journey header {align-items:flex-start}
+.eh-journey header>div:first-child {flex:1 1 650px}
+.eh-journey header>div:last-child {display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.eh-journey .intro {margin-bottom:0}
+.eh-journey .control {padding:20px;background:#111f28;border:1px solid #2b424e;border-radius:12px;gap:14px;margin:24px 0}
+.eh-journey .control label {flex:1 1 155px;min-width:0;color:#b9cad3;font-size:12px}
+.eh-journey .control label:first-child {flex:1.7 1 260px}
+.eh-journey .control select,.eh-journey #episode {width:100%;min-width:0;max-width:100%}
+.eh-journey .rail {gap:10px;margin:24px 0}
+.eh-journey .step {padding:18px 16px;background:#111f28;border-color:#2b424e;color:#a6b8c2;border-radius:9px}
+.eh-journey .step span {font-size:10px;letter-spacing:.09em}
+.eh-journey .step strong {font-size:14px;line-height:1.35;margin-top:10px}
+.eh-journey .step.ready {background:#142820;border-color:#49684e;color:#edf5f7}
+.eh-journey .step.ready span {color:#b7f37c}
+.eh-journey .step.onair {border-color:#b7f37c;background:#203a2a}
+.eh-journey .panel>.eyebrow {margin-bottom:10px}
+.eh-journey #title {font-size:25px}
+.eh-journey .story-row {border-color:#2b424e;padding:17px 0}
+.eh-journey .story-row small {color:#b7f37c;font-size:10px;font-weight:650}
+.eh-journey .story-row p {font-size:15px;line-height:1.75}
+.eh-journey :is(.source,.metric,.format) {border-color:#2b424e;font-size:13px;line-height:1.65}
+.eh-journey .source {grid-template-columns:58px 60px minmax(0,1fr);gap:12px;padding:14px 0}
+.eh-journey .source>* {min-width:0;overflow-wrap:anywhere}
+.eh-journey .source a {font-family:ui-monospace,monospace}
+.eh-journey .source span {color:#a6b8c2}
+.eh-journey .metric {padding:12px 0}
+.eh-journey .metric strong {color:#edf5f7;font-variant-numeric:tabular-nums}
+.eh-journey .pending {color:#f0cb8e}
+.eh-journey .error {color:#ffb3a8}
+
+                                                                      
+body:has(main.eh-replay) main>h1 {max-width:900px;font-size:clamp(34px,4.5vw,60px);margin:16px 0 20px}
+body:has(main.eh-replay) main>p.muted {font-size:15px;line-height:1.75}
+body:has(main.eh-replay) .controls {border:1px solid #2b424e;border-radius:12px;background:#111f28;padding:20px;margin:26px 0;gap:14px}
+body:has(main.eh-replay) .controls label {flex:1 1 165px;min-width:0;color:#b9cad3;font-size:12px}
+body:has(main.eh-replay) .controls label:first-child {flex:0 1 140px}
+body:has(main.eh-replay) .controls input,body:has(main.eh-replay) .controls select {width:100%}
+body:has(main.eh-replay) .controls button {min-height:44px}
+body:has(main.eh-replay) button.primary:not(:disabled):hover {background:#cdf8a6;border-color:#cdf8a6;color:#102018}
+body:has(main.eh-replay) .result {padding:28px}
+body:has(main.eh-replay) .result[data-status=passed] {border-color:#88b66b;background:linear-gradient(110deg,#172b26,#111f28)}
+body:has(main.eh-replay) .result[data-status=failed] {border-color:#d98a81}
+body:has(main.eh-replay) .result-head h2 {font-size:26px}
+body:has(main.eh-replay) .number {font-size:36px;color:#edf5f7;font-weight:650;letter-spacing:-.03em;margin-bottom:8px}
+body:has(main.eh-replay) .bar {background:#2b424e;height:6px;margin:24px 0}
+body:has(main.eh-replay) .bar span {background:#b7f37c}
+body:has(main.eh-replay) .proof-grid {gap:24px}
+body:has(main.eh-replay) .proof-grid>div {min-width:0;padding-right:15px;border-right:1px solid #2b424e}
+body:has(main.eh-replay) .proof-grid>div:last-child {border-right:0;padding-right:0}
+body:has(main.eh-replay) .proof-grid small {font-size:12px;line-height:1.55;display:block}
+body:has(main.eh-replay) .lanes {gap:20px;margin:24px 0}
+body:has(main.eh-replay) .lane h2 {margin-top:10px;flex-wrap:wrap;gap:8px;font-size:20px}
+body:has(main.eh-replay) .clock {font-size:25px;color:#b7f37c}
+body:has(main.eh-replay) .lane .stats {background:#162833;border:1px solid #2b424e;border-radius:8px;padding:14px;font-size:12px}
+body:has(main.eh-replay) .lane .stats b {font-size:23px;margin-top:6px;line-height:1.3}
+body:has(main.eh-replay) .lane .hash {padding:12px;background:#0d1921;border-radius:6px}
+body:has(main.eh-replay) .feed {border-color:#2b424e}
+body:has(main.eh-replay) .feed li {padding:11px 0;border-color:#2b424e;align-items:baseline;font-size:12px}
+body:has(main.eh-replay) .feed span {color:#a6b8c2;font-variant-numeric:tabular-nums;flex:0 0 auto}
+body:has(main.eh-replay) .feed b {text-align:right;font-weight:550;overflow-wrap:anywhere}
+body:has(main.eh-replay) .timing {gap:12px;border-top:1px solid #2b424e;padding-top:14px}
+body:has(main.eh-replay) .timing b {text-align:right}
+body:has(main.eh-replay) .foot {gap:32px;margin-top:32px;line-height:1.75}
+body:has(main.eh-replay) .foot>section {min-width:0}
+body:has(main.eh-replay) .foot .actions a {min-height:36px}
+body:has(main.eh-replay) .foot summary {padding:10px 0;cursor:pointer;color:#c9d8df}
+
+                                                                                   
+html:has(body.eh-output),body.eh-output {background:transparent!important}
+.eh-output #caption,.eh-output #metrics {background:#08141bf2;border-color:#b7f37c;color:#edf5f7}
+.eh-output #caption {border-radius:8px}
+.eh-output #metrics {border:1px solid #2b424e;max-width:90%}
+.eh-output .sources {color:#b9cdd7;overflow-wrap:anywhere}
+.eh-output .row {grid-template-columns:minmax(0,1fr) auto}
+.eh-output .row>span {overflow-wrap:anywhere}
+
+@media(min-width:1500px) {
+  .eh-studio .workbench {grid-template-columns:minmax(0,1fr) 350px}
+}
+@media(max-width:1050px) {
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) main {padding:28px 24px 36px}
+  :is(.eh-studio,body:has(main.eh-replay))>header {padding:18px 24px}
+  .eh-studio .workbench {grid-template-columns:minmax(0,1fr)}
+  .eh-studio .proof {display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .eh-studio .intro {align-items:flex-start;flex-wrap:wrap}
+  .eh-demo .grid {grid-template-columns:minmax(0,1.25fr) minmax(270px,1fr)}
+}
+@media(max-width:850px) {
+  .eh-demo .grid,.eh-journey .top,.eh-journey .grid {grid-template-columns:minmax(0,1fr)}
+  .eh-demo :is(.compare,.lens-grid) {grid-template-columns:minmax(0,1fr)}
+  .eh-demo .proof-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .eh-journey .rail {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .eh-journey header>div:last-child {font-size:13px}
+  body:has(main.eh-replay) .lanes,body:has(main.eh-replay) .foot {grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:600px) {
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) main {padding:22px 16px 30px}
+  :is(.eh-studio,body:has(main.eh-replay))>header {padding:16px;align-items:flex-start}
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) header {gap:10px 18px}
+  :is(.eh-demo,.eh-studio,body:has(main.eh-replay)) .brand {width:100%;font-size:13px}
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) header a {font-size:12px;min-height:34px}
+  :is(.eh-studio,body:has(main.eh-replay)) header nav {gap:5px 18px}
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.panel,.proof,.lane) {padding:18px}
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) h1 {font-size:34px}
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.intro p,p.intro) {font-size:14px}
+  .eh-demo :is(.toolbar,.controls) {gap:12px}
+  .eh-demo .toolbar {padding:16px}
+  .eh-demo .toolbar label {flex-basis:calc(50% - 6px)}
+  .eh-demo .toolbar select {font-size:12px;padding:9px 7px}
+  .eh-demo .scoreline {gap:8px;font-size:12px}
+  .eh-demo .scoreline strong {font-size:27px}
+  .eh-demo .stats {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .eh-demo .stat {font-size:11px}
+  .eh-demo .stat strong {font-size:18px}
+  .eh-demo #demo-card-title {font-size:23px}
+  .eh-demo .proof-grid {gap:10px}
+  .eh-demo .proof-grid article {padding:14px}
+  .eh-demo .proof-grid b {font-size:24px}
+  .eh-demo :is(.compare article,.lens-grid article) {padding:16px}
+  .eh-demo .caption {font-size:11px;padding:8px 10px}
+  .eh-studio .proof {display:block}
+  .eh-studio .proof>div+div {margin-top:24px;padding-top:20px;border-top:1px solid #2b424e}
+  .eh-studio .tabs {width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .eh-studio .tabs button {font-size:11px;padding:9px 6px;line-height:1.5}
+  .eh-studio .screen[data-layout=studio] {min-height:0;padding:20px}
+  .eh-studio .screen[data-layout=studio] .picture-row {margin-top:18px}
+  .eh-studio .screen[data-layout=studio] .scorebug {font-size:10px;gap:7px;padding:7px 9px;flex-wrap:wrap}
+  .eh-studio .screen[data-layout=studio] .replay-tag {font-size:8px}
+  .eh-studio .transport {padding:16px}
+  .eh-studio .transport-top {gap:8px}
+  .eh-studio #status {width:100%;margin-left:0}
+  .eh-studio .screen[data-layout=stream] {max-width:100%}
+  .eh-studio .screen[data-layout=stream] .scorebug {flex-wrap:wrap}
+  .eh-studio .chain li {flex-basis:calc(50% - 10px)}
+  .eh-journey .control {padding:16px;gap:12px}
+  .eh-journey .control label {flex-basis:calc(50% - 6px)}
+  .eh-journey .control label:first-child {flex-basis:100%}
+  .eh-journey .control select {font-size:13px}
+  .eh-journey .step {padding:14px 12px}
+  .eh-journey .step strong {font-size:13px}
+  .eh-journey .source {grid-template-columns:46px minmax(0,1fr);gap:6px 10px}
+  .eh-journey .source>:last-child {grid-column:1/-1}
+  body:has(main.eh-replay) .controls {padding:16px;gap:12px}
+  body:has(main.eh-replay) .controls label,body:has(main.eh-replay) .controls label:first-child {flex:1 1 calc(50% - 6px)}
+  body:has(main.eh-replay) .controls label:nth-child(3) {flex-basis:100%}
+  body:has(main.eh-replay) .result {padding:18px}
+  body:has(main.eh-replay) .result-head {align-items:flex-start;flex-direction:column}
+  body:has(main.eh-replay) .result-head h2 {font-size:24px}
+  body:has(main.eh-replay) .proof-grid {gap:12px}
+  body:has(main.eh-replay) .proof-grid>div {padding-right:8px}
+  body:has(main.eh-replay) .number {font-size:26px}
+  body:has(main.eh-replay) .proof-grid small {font-size:11px}
+  body:has(main.eh-replay) .lane .stats {gap:8px;padding:12px}
+  body:has(main.eh-replay) .lane .stats b {font-size:20px}
+}
+@media(max-width:360px) {
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) main {padding-inline:12px}
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) :is(.panel,.proof,.lane) {padding:14px}
+  :is(.eh-demo,.eh-studio,.eh-journey,body:has(main.eh-replay)) h1 {font-size:31px}
+  .eh-demo .toolbar {padding:12px}
+  .eh-demo .scoreline .clock {padding:4px 6px}
+  .eh-demo .scoreline {gap:6px}
+  .eh-studio .screen[data-layout=studio] {padding:14px}
+  .eh-studio .screen[data-layout=stream] {padding:18px}
+  .eh-journey .source {font-size:12px}
+  body:has(main.eh-replay) .proof-grid {gap:8px}
+  body:has(main.eh-replay) .number {font-size:23px}
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Event Horizon pixel-recognition event",
+  "type": "object",
+  "required": ["id", "kind", "time", "available_at", "actors", "frame_ids", "facts", "source", "model"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^cv-[1-9][0-9]*$"},
+    "kind": {"enum": ["pass_started", "pass_completed", "pass_incomplete", "shot", "shot_end", "ball_recovered", "tackle", "interception", "possession_change", "pressure", "goal"]},
+    "time": {"type": "number", "minimum": 0, "maximum": 5400},
+    "available_at": {"type": "number", "minimum": 0, "maximum": 5400},
+    "actors": {"type": "array", "items": {"type": "object", "required": ["team", "number", "name"], "properties": {"team": {"enum": [0, 1]}, "number": {"type": "integer", "minimum": 1, "maximum": 11}, "name": {"type": "string"}}}},
+    "frame_ids": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 1}},
+    "facts": {"type": "object"},
+    "source": {"const": "pixels"},
+    "model": {"const": "eh-pixel-tracker-1"}
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,22 @@
+
+
+AppDependencies
+| where Name startswith "eh."
+| summarize p50_ms=percentile(DurationMs,50), p95_ms=percentile(DurationMs,95), sampled_operations=count() by Name, bin(TimeGenerated,5m)
+| order by TimeGenerated desc
+
+
+AppMetrics
+| where Name == "eh.stage.duration"
+| extend stage=tostring(Properties.stage)
+| summarize total_ms=sum(Sum), measurements=sum(ItemCount), min_ms=min(Min), max_ms=max(Max) by stage, bin(TimeGenerated,5m)
+| extend mean_ms=total_ms/measurements
+
+AppMetrics
+| where Name == "eh.stage.count" and tostring(Properties.outcome) != "ok"
+| summarize failures=sum(Sum) by stage=tostring(Properties.stage), outcome=tostring(Properties.outcome), bin(TimeGenerated,5m)
+
+AppDependencies
+| where Name startswith "eh."
+| project TimeGenerated, OperationId, ParentId, Name, DurationMs, Success, Properties
+| order by TimeGenerated desc

@@ -1,0 +1,991 @@
+<!doctype html>
+<html lang="en">
+<head><script src="/global-locales.js"></script><script src="/global-locale.js"></script><script src="/field-renderer.js"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Event Horizon</title>
+  <style>
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: #0c1422; color: #edf4ff; font: 15px system-ui, sans-serif; }
+    main { max-width: 1480px; margin: auto; padding: 28px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; }
+    h1 { margin: 0 0 5px; font-size: 24px; letter-spacing: .06em; }
+    .muted { color: #a7b8ce; line-height: 1.5; }
+    .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+    .layout-buttons { display: flex; gap: 6px; }
+    button { border: 1px solid #405573; background: #17263b; color: #d4e1f5; border-radius: 8px; padding: 10px 13px; font: inherit; cursor: pointer; }
+    button[aria-pressed="true"] { background: #e2edfc; border-color: #e2edfc; color: #14243b; }
+    button:focus-visible { outline: 3px solid #f4cf68; outline-offset: 3px; }
+    .scoreboard { display: flex; justify-content: center; align-items: center; gap: 22px; margin: 26px 0 20px; font-size: 19px; }
+    .scoreboard strong { font-size: 29px; white-space: nowrap; }
+    .blue { color: #83c8ff; } .red { color: #ff9c9c; }
+    .clock { font-variant-numeric: tabular-nums; font-size: 17px; padding: 8px 12px; border-radius: 7px; background: #213047; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 18px; align-items: start; }
+    .pitch { position: relative; border: 1px solid #324a52; border-radius: 14px; overflow: hidden; background: #164f35; }
+    canvas { display: block; width: 100%; aspect-ratio: 121 / 84; }
+    .status { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; font-size: 13px; }
+    .status .badge { color: #f4cf68; }
+    .panel { background: #15243a; border: 1px solid #2a3c55; padding: 20px; border-radius: 14px; }
+    h2 { font-size: 18px; margin: 0 0 16px; }
+    .statistics { display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 12px 16px; align-items: center; font-variant-numeric: tabular-nums; }
+    .statistics .label { color: #c0cfe3; }
+    .statistics .value { text-align: center; font-weight: 650; min-width: 35px; }
+    .statistics .team { font-size: 12px; }
+    .note { font-size: 12px; color: #98abc5; line-height: 1.5; margin: 15px 0 0; }
+    .episode { margin-top: 23px; padding-top: 20px; border-top: 1px solid #33455e; }
+    .episode h2 { margin: 7px 0; }
+    .episode p { line-height: 1.6; margin: 0; color: #d3dfef; }
+    .overlay-stats { position: absolute; top: 12px; right: 12px; width: 255px; padding: 13px; background: #0b1421ed; border: 1px solid #6b809080; border-radius: 9px; }
+    .overlay-stats h2 { font-size: 14px; margin-bottom: 10px; }
+    .overlay-stats .statistics { font-size: 12px; gap: 7px 8px; }
+    .overlay-stats .statistics .team { font-size: 10px; }
+    .overlay-story { position: absolute; bottom: 12px; left: 12px; right: 12px; padding: 12px 16px; border-left: 3px solid #f4cf68; border-radius: 4px 9px 9px 4px; background: #0b1421ed; }
+    .overlay-story strong { font-size: 15px; }
+    .overlay-story p { margin: 5px 0 0; font-size: 13px; line-height: 1.45; }
+    .overlay-mode .layout { grid-template-columns: minmax(0, 1fr); }
+    .connection { color: #ffbe86; margin: 12px 0; }
+    .match-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-top: 22px; }
+    .match-controls label { display: grid; gap: 6px; color: #a7b8ce; font-size: 12px; }
+    input { width: 145px; padding: 10px 12px; border: 1px solid #405573; border-radius: 8px; background: #142238; color: #edf4ff; font: inherit; }
+    button:disabled { opacity: .5; cursor: wait; }
+    .stream-status { color: #a7b8ce; font-size: 12px; margin-top: 10px; line-height: 1.6; }
+    .restart-message { color: #f4cf68; }
+    select, textarea { color: #edf4ff; background: #142238; border: 1px solid #405573; border-radius: 8px; padding: 10px; font: inherit; width: 100%; }
+    textarea { min-height: 116px; resize: vertical; line-height: 1.55; }
+    label { color: #b8c9df; font-size: 13px; }
+    .audience-bar { display: flex; gap: 7px; margin: 22px 0 15px; }
+    .session-settings { border-bottom: 1px solid #293b53; padding-bottom: 12px; }
+    summary { cursor: pointer; color: #b8c9df; font-size: 13px; }
+    .session-settings .match-controls { margin-top: 14px; }
+    .status { flex-wrap: wrap; align-items: start; }
+    .status .badge { white-space: nowrap; }
+    .intelligence { margin-top: 24px; }
+    .story-header { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr); gap: 18px; }
+    .story-summary { font-size: 17px; line-height: 1.75; margin: 14px 0 0; }
+    .section-label { color: #f4cf68; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; }
+    .preferences { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
+    .preferences label { display: grid; gap: 7px; }
+    .focus-tag { color: #95d2ff; font-size: 12px; margin-top: 12px; }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; margin-top: 18px; }
+    .moment-card { border: 1px solid #2d415e; background: #122036; border-radius: 13px; padding: 19px; }
+    .moment-card.goal { border-color: #b6994a; background: #242b31; }
+    .moment-card h3 { font-size: 18px; margin: 9px 0 15px; line-height: 1.4; }
+    .moment-card p { line-height: 1.65; margin: 6px 0 15px; color: #cddcee; }
+    .moment-card .question { color: #89a5c5; font-size: 11px; text-transform: uppercase; letter-spacing: .07em; margin-top: 14px; }
+    .attack-path { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); list-style: none; padding: 0; margin: 17px 0; gap: 5px; }
+    .attack-path li { position: relative; padding: 11px 8px; background: #1b3146; border-top: 2px solid #5c9dcc; border-radius: 4px; font-size: 12px; line-height: 1.45; }
+    .attack-path li:last-child { border-color: #e2bd64; }
+    .attack-path small { display: block; color: #90abc8; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
+    .personal-story { padding: 13px; border-left: 3px solid #7cbbe9; background: #1c334a; border-radius: 6px; margin: 16px 0; font-size: 13px; line-height: 1.65; color: #d5ebff; }
+    .pulse { margin-top: 18px; }
+    .pulse-head { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
+    .pulse-head h2 { margin: 7px 0 15px; }
+    .comparison { display: grid; grid-template-columns: minmax(90px,1fr) repeat(2,minmax(0,1fr)); gap: 9px 16px; align-items: center; font-size: 13px; }
+    .comparison .period { color: #8fa8c6; font-size: 11px; }
+    .shot-bar { display: flex; align-items: center; gap: 9px; min-height: 21px; font-variant-numeric: tabular-nums; }
+    .shot-bar i { display: block; width: var(--bar); height: 6px; border-radius: 8px; background: currentColor; opacity: .8; transition: width .3s; }
+    .possession-track { display: flex; height: 7px; background: #20364c; border-radius: 9px; overflow: hidden; margin-top: 16px; }
+    .possession-track span { transition: width .3s; }
+    .possession-track .blue-half { background: #69b8f0; }
+    .possession-track .red-half { background: #e98592; }
+    .possession-labels { display: flex; justify-content: space-between; font-size: 12px; margin-top: 8px; }
+    .fact-checks { margin: 16px 0; padding: 13px; border-radius: 9px; background: #0e1c2d; border: 1px solid #2b4659; }
+    .fact-checks ul { list-style: none; padding: 0; margin-bottom: 0; }
+    .fact-checks li { display: flex; gap: 9px; padding: 9px 0; font-size: 12px; line-height: 1.5; border-bottom: 1px solid #263a51; }
+    .fact-checks li:last-child { border-bottom: 0; }
+    .fact-checks .ok { color: #91d9aa; }
+    .fact-checks .failed { color: #ffbc86; }
+    .audit { margin-top: 13px; font-size: 12px; line-height: 1.65; color: #9eb7d3; }
+    .audit code { overflow-wrap: anywhere; }
+    .card-meta { display: flex; gap: 9px; justify-content: space-between; flex-wrap: wrap; font-size: 12px; color: #a4b8d1; }
+    .tag { color: #9fe0b2; font-size: 11px; border: 1px solid #38594e; border-radius: 5px; padding: 3px 6px; }
+    .tag.pending { color: #f0cd8a; border-color: #6d5b39; }
+    .evidence { padding-top: 12px; border-top: 1px solid #2d415e; margin-top: 15px; }
+    .evidence ol { padding-left: 23px; margin-bottom: 0; }
+    .evidence li { padding: 6px 0; color: #a8bed8; font-size: 12px; line-height: 1.5; }
+    .empty { color: #a6bad3; line-height: 1.7; padding: 20px; border: 1px dashed #405573; border-radius: 12px; margin-top: 17px; }
+    .desk-heading { display: flex; justify-content: space-between; align-items: start; gap: 18px; margin-bottom: 18px; }
+    .desk-heading h2 { margin: 6px 0; }
+    .desk-grid { display: grid; grid-template-columns: minmax(230px, 1fr) minmax(0,2fr); gap: 18px; }
+    .queue { display: grid; gap: 8px; margin-top: 14px; max-height: 600px; overflow-y: auto; }
+    .queue-item { display: grid; gap: 7px; width: 100%; padding: 13px; text-align: left; line-height: 1.5; }
+    .queue-item[aria-pressed="true"] { background: #263e5b; color: #eff6ff; border-color: #77baff; }
+    .queue-item small { color: #9eb9d8; }
+    .inspector h3 { margin: 10px 0; font-size: 21px; }
+    .inspector p { line-height: 1.65; color: #c6d8ec; }
+    .checks { display: flex; gap: 7px; flex-wrap: wrap; margin: 16px 0; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .actions button { font-size: 13px; }
+    .primary-action { background: #d8eaff; color: #142238; border-color: #d8eaff; }
+    .editor-feedback { color: #f4cf68; font-size: 13px; line-height: 1.6; margin-top: 12px; }
+    .preview { margin-top: 18px; padding: 19px; background: #0b1421; border-left: 3px solid #f4cf68; border-radius: 9px; }
+    .preview p { margin-bottom: 0; line-height: 1.6; }
+    .preview p, .caption-sample { white-space: pre-line; overflow-wrap: anywhere; }
+    .overview { margin-top: 18px; }
+    .overview-heading { display: flex; justify-content: space-between; gap: 15px; align-items: start; flex-wrap: wrap; }
+    .overview-heading h2 { margin: 6px 0 10px; }
+    .overview-heading button { font-size: 12px; }
+    .overview-layout { display: grid; grid-template-columns: minmax(200px,1fr) minmax(0,1.5fr); gap: 18px; margin-top: 15px; }
+    .episode-list { display: grid; gap: 7px; max-height: 360px; overflow-y: auto; align-content: start; }
+    .episode-link { text-align: left; display: grid; grid-template-columns: 45px 1fr; gap: 10px; line-height: 1.5; padding: 11px; }
+    .episode-link time { font-variant-numeric: tabular-nums; color: #8fc9ed; }
+    .episode-link[aria-pressed="true"] time { color: #234967; }
+    .episode-detail { padding: 16px; border-left: 2px solid #d1b765; background: #0d1d30; border-radius: 7px; }
+    .episode-detail h3 { margin: 7px 0 12px; font-size: 17px; }
+    .episode-detail p { color: #c7d9ea; line-height: 1.65; }
+    .material-switch { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0; }
+    .material-switch button { flex: 1; font-size: 12px; }
+    .material-output { padding: 16px; background: #0d1d30; border: 1px solid #314c65; border-radius: 10px; }
+    .material-output h3 { font-size: 18px; }
+    .material-output h4 { margin: 18px 0 8px; font-size: 13px; color: #a6c5df; }
+    .presenter-lead { font-size: 17px; color: #e0edfc !important; }
+    .presenter-points { padding-left: 19px; color: #cbdaeb; font-size: 14px; line-height: 1.7; }
+    .presenter-points li { margin: 7px 0; }
+    .material-metrics { display: grid; gap: 8px; margin: 15px 0; }
+    .material-metric { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 10px 12px; border: 1px solid #29435b; border-radius: 6px; background: #13283c; }
+    .material-metric span { color: #a9c1d8; font-size: 12px; line-height: 1.5; }
+    .material-metric strong { color: #e1f1ff; font-size: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .caption-sample { padding: 15px 17px; border-left: 3px solid #f4cf68; background: #060e19; border-radius: 6px; line-height: 1.6; font-size: 17px; color: #f2f5fa; }
+    .stream-heading { margin: 22px 0 0; }
+    .stream-heading h2 { margin: 6px 0; }
+    .stream-details { margin-top: 16px; border-top: 1px solid #29435b; padding-top: 13px; }
+    .stream-focus { color: #8fd1fa; font-size: 12px; margin-top: 10px; }
+    .copy-count { color: #a5bdd4; font-size: 12px; margin-top: 6px; }
+    @media (max-width: 900px) { .overview-layout { grid-template-columns: minmax(0,1fr); } .episode-list { max-height: 210px; } }
+    .pass-platform { margin-top: 23px; border: 1px solid #38556c; border-radius: 15px; background: linear-gradient(135deg,#172b40,#101d30); overflow: hidden; }
+    .pass-platform-header { display: flex; justify-content: space-between; align-items: start; gap: 18px; padding: 20px 22px 0; }
+    .pass-platform-header h2 { margin: 6px 0; font-size: 21px; }
+    .pass-platform-header button { white-space: nowrap; font-size: 12px; }
+    .pass-platform-body { padding: 15px 22px 22px; }
+    .pass-result-heading { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-bottom: 12px; }
+    .live-dot { width: 7px; height: 7px; background: #8ddbae; border-radius: 50%; box-shadow: 0 0 11px #8ddbae40; }
+    .pass-explanation { margin: 0; color: #e4f0ff; line-height: 1.7; font-size: 18px; max-width: 850px; }
+    .pass-evidence-grid { display: grid; grid-template-columns: minmax(190px,1fr) minmax(230px,1.3fr); gap: 17px; align-items: stretch; margin-top: 19px; }
+    .pass-route { border: 1px solid #446956; background: #16452f; border-radius: 10px; overflow: hidden; }
+    .pass-route svg { display: block; width: 100%; max-height: 210px; }
+    .pass-route-caption { padding: 7px 11px; font-size: 11px; color: #c4ddcf; border-top: 1px solid #365e49; }
+    .pass-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .pass-metric { background: #0a162678; border: 1px solid #2c455e; border-radius: 9px; padding: 13px; }
+    .pass-metric span { display: block; color: #a6bdd6; font-size: 11px; line-height: 1.45; }
+    .pass-metric strong { display: block; font-size: 24px; font-weight: 600; color: #e8f3ff; margin: 6px 0 3px; font-variant-numeric: tabular-nums; }
+    .pass-metric small { color: #9ccbb8; font-size: 11px; }
+    .recent-passes { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+    .recent-passes button { font-size: 11px; padding: 7px 10px; flex: 0 0 auto; }
+    .recent-passes button[aria-pressed="true"] { background: #27445c; border-color: #82c5ef; color: #eef7ff; }
+    .automation-proof { border-top: 1px solid #30485f; padding-top: 14px; margin-top: 17px; }
+    .automation-flow { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; margin: 14px 0; padding: 0; list-style: none; }
+    .automation-flow li { border: 1px solid #3d5e51; border-radius: 8px; padding: 12px; color: #b5dcc5; background: #172e2a70; font-size: 12px; line-height: 1.5; }
+    .automation-flow li strong { display: block; color: #e6f4ed; margin: 5px 0; font-size: 13px; }
+    .automation-flow li.pending { border-color: #6b5838; color: #d9c39a; background: #3b302440; }
+    .automation-note { color: #a2b7cf; font-size: 12px; line-height: 1.7; }
+    .pipeline-error { margin: 13px 22px 0; border-left: 3px solid #f2bd75; padding: 8px 12px; color: #ffdab4; }
+    @media (max-width: 650px) {
+      .pass-platform-header { padding: 17px 16px 0; flex-wrap: wrap; gap: 9px; }
+      .pass-platform-header h2 { font-size: 19px; }
+      .pass-platform-body { padding: 15px 16px 17px; }
+      .pass-explanation { font-size: 16px; }
+      .pass-evidence-grid { grid-template-columns: minmax(0,1fr); }
+      .automation-flow { grid-template-columns: 1fr 1fr; }
+      .pass-route svg { max-height: 180px; }
+    }
+    @media (max-width: 900px) {
+      .story-header, .desk-grid { grid-template-columns: minmax(0,1fr); }
+      .queue { max-height: 230px; }
+    }
+    @media (max-width: 520px) {
+      .attack-path { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .comparison { gap: 8px; font-size: 12px; }
+      .cards { grid-template-columns: minmax(0,1fr); }
+      .preferences { grid-template-columns: minmax(0,1fr); }
+      .panel, .moment-card { padding: 16px; }
+      .story-summary { font-size: 15px; }
+      .audience-bar button { min-height: 40px; }
+    }
+    footer { margin-top: 19px; font-size: 12px; line-height: 1.6; color: #96a9c2; }
+    @media (max-width: 900px) {
+      main { padding: 18px; }
+      .layout { grid-template-columns: minmax(0, 1fr); }
+      .scoreboard { gap: 12px; font-size: 16px; }
+      .scoreboard strong { font-size: 25px; }
+    }
+    @media (max-width: 520px) {
+      main { padding: 12px; }
+      h1 { font-size: 21px; }
+      .layout-buttons { width: 100%; }
+      button { flex: 1; font-size: 12px; padding: 10px 7px; }
+      .scoreboard { gap: 9px; flex-wrap: wrap; margin: 18px 0; }
+      .clock { font-size: 14px; }
+      .overlay-stats { top: 5px; right: 5px; width: 173px; padding: 7px; }
+      .overlay-stats h2 { font-size: 11px; margin: 0 0 5px; }
+      .overlay-stats .statistics { gap: 3px 5px; font-size: 9px; }
+      .overlay-stats .statistics .value { min-width: 20px; }
+      .overlay-stats .statistics .team { font-size: 9px; }
+      .overlay-story { bottom: 5px; left: 5px; right: 5px; padding: 6px 9px; }
+      .overlay-story strong { font-size: 11px; }
+      .overlay-story p { font-size: 10px; margin-top: 2px; }
+    }
+
+    .global-preferences { margin-top: 18px; padding:16px 20px; }
+    .global-preferences h2 { margin-bottom:8px; }
+    .experience { margin-top:22px; padding:22px; background:linear-gradient(130deg,#172b42,#102036); }
+    .five-stages { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:7px; list-style:none; padding:0; }
+    .five-stages li { padding:11px; border:1px solid #34536c; border-radius:7px; color:#b7d1e5; font-size:11px; line-height:1.5; }
+    .five-stages li.done { border-color:#49765c; background:#17342d; }
+    .context-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0; }
+    .context-box { background:#0e1d30; padding:17px; border-radius:9px; border:1px solid #2d465e; }
+    .context-box h3 { margin:0 0 12px; font-size:16px; }
+    .context-row { display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:10px; padding:8px 0; font-size:12px; color:#c3d4e8; }
+    .context-row small { color:#99aec6; }
+    .context-row strong { font-variant-numeric:tabular-nums; }
+    .context-note { font-size:13px; line-height:1.7; color:#bcd2e8; }
+    .heat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:4px; }
+    .heat-grid span { border:1px solid #41645e; min-height:43px; display:grid; place-items:center; font-size:12px; border-radius:3px; }
+    .zone-label { display:flex; justify-content:space-between; gap:10px; font-size:11px; color:#abc8d8; margin:9px 0; }
+    .why-title { display:flex; justify-content:space-between; gap:12px; align-items:center; margin:24px 0 15px; flex-wrap:wrap; }
+    .why-title h2 { margin:5px 0; font-size:24px; }
+    .why-grid { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:18px; }
+    .scene { border:1px solid #4c7559; background:#174c34; border-radius:10px; overflow:hidden; }
+    .scene svg { width:100%; display:block; }
+    .scene-note { padding:8px 12px; background:#0b1e18; color:#c3dece; font-size:12px; line-height:1.5; }
+    .scene-controls { display:flex; align-items:center; gap:10px; padding:12px 0; }
+    .scene-controls input { width:100%; padding:0; }
+    .scene-controls button { flex:0 0 34px; padding:9px; }
+    .why-copy p { line-height:1.7; }
+    .why-copy h3 { margin:8px 0; font-size:20px; }
+    .proof-lens { margin:20px 0; padding:15px; border:1px solid #4c6b7e; border-radius:11px; background:#102b3b; }
+    .proof-lens>.note { margin:7px 0 13px; overflow-wrap:anywhere; }
+    .proof-cards { display:grid; gap:9px; }
+    .proof-cards article { padding:11px 12px; border-left:3px solid #dfbb70; border-radius:5px; background:#1b3345; }
+    .proof-cards article>button { background:transparent; border:0; padding:0; color:#aee0ff; text-align:left; font-weight:650; }
+    .proof-cards article p { margin:7px 0; font-size:13px; line-height:1.5; }
+    .proof-cards details { font-size:11px; color:#b9cee1; }
+    .proof-ids { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+    .proof-ids button { padding:4px 6px; font-size:11px; }
+    .evidence-steps { display:flex; gap:6px; flex-wrap:wrap; margin:12px 0; max-height:160px; overflow-y:auto; }
+    .evidence-steps button { font-size:11px; padding:6px 9px; flex:0 0 auto; }
+    .focus-table { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:14px 0; }
+    .focus-table div { background:#132d45; border:1px solid #34536d; padding:13px; border-radius:7px; font-size:12px; color:#b8cfe0; }
+    .focus-table strong { display:block; font-size:24px; color:#e8f4ff; margin-top:8px; }
+    .focus-events { max-height:230px; overflow-y:auto; display:grid; gap:7px; }
+    .focus-events button { text-align:left; font-size:12px; line-height:1.5; }
+    .journal-form { display:flex; gap:8px; align-items:end; flex-wrap:wrap; margin:15px 0; }
+    .journal-form label { display:grid; gap:5px; flex:1; }
+    .journal-form input { width:100%; }
+    .journal-result { color:#bdd2e7; font-size:12px; line-height:1.6; }
+    .journal-result pre { max-height:300px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; font-size:11px; }
+    .tempo-chart { display:block; width:100%; height:80px; }
+    body[data-audience="fan"] .pass-platform, body[data-audience="player"] .pass-platform { display:none; }
+    body[data-audience="analyst"] #fan-view, body[data-audience="player"] #fan-view { display:none; }
+    .story-header { display:none; }
+    #fan-view .pulse { display:none; }
+    @media(max-width:900px) { .why-grid,.context-grid {grid-template-columns:minmax(0,1fr);} .five-stages {grid-template-columns:repeat(3,minmax(0,1fr));} }
+    @media(max-width:520px) { .experience {padding:16px;} .five-stages {grid-template-columns:repeat(2,minmax(0,1fr));} .five-stages li:last-child {grid-column:span 2;} .focus-table {grid-template-columns:repeat(2,1fr);} }
+
+    .metric-settings { margin:14px 0; padding:14px 18px; }
+    .metric-options { display:flex; flex-wrap:wrap; gap:10px 18px; margin-top:15px; }
+    .metric-options label { display:flex; align-items:center; gap:7px; }
+    .metric-options input { width:auto; accent-color:#f4cf68; }
+    .continuous-focus { position:sticky; top:0; z-index:4; display:flex; flex-wrap:wrap; gap:8px 17px; padding:13px 17px; background:#172b3bf5; border:1px solid #e0bd60; border-radius:10px; font-size:12px; box-shadow:0 5px 20px #0005; }
+    .continuous-focus strong { color:#f4cf68; }
+    .live-material { border-top:2px solid #dec475; margin-top:20px; padding-top:13px; }
+    .live-material h3 { font-size:17px; line-height:1.45; margin:10px 0; }
+    .live-material p { color:#c7d9e9; line-height:1.6; font-size:13px; }
+    .live-material a,.delivery-health a,.period-comparison a { color:#8eccf4; }
+    .source-links { display:flex; flex-wrap:wrap; gap:6px; font-size:11px; }
+    .latency-strip { font-size:12px; color:#a8bfd4; margin:15px 0; line-height:1.6; }
+    .period-comparison { padding:20px; background:linear-gradient(120deg,#183648,#132839); border:1px solid #46768b; border-radius:12px; margin:22px 0; }
+    .period-comparison h3 { font-size:20px; line-height:1.5; margin:10px 0; }
+    .period-comparison .context-row { grid-template-columns:minmax(0,1.8fr) 1fr 1fr 1fr; }
+    .perspective-pair { border-top:1px solid #3b5265; padding:15px 0; }
+    .perspective-team { color:#f4cf68; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; margin-bottom:10px; }
+    .perspective-grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.45fr); gap:15px; }
+    .period-side { min-width:0; padding:15px; border:1px solid #4b687c; border-radius:9px; background:#102535; }
+    .period-side h3 { margin:7px 0 14px; }
+    .perspective-role { color:#91c9df; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+    .fact-tag { display:inline-block; font-size:10px; padding:5px 7px; border:1px solid #53778c; border-radius:5px; color:#b1cedd; }
+    .delivery-health { margin:20px 0; font-size:12px; line-height:1.7; }
+    .delivery-health pre { white-space:pre-wrap; overflow-wrap:anywhere; max-height:280px; overflow:auto; background:#0b1828; padding:12px; }
+    body[data-audience="fan"] .context-grid,body[data-audience="fan"] #context-story,
+    body[data-audience="player"] .context-grid,body[data-audience="player"] #context-story { display:none; }
+    .raw-event { display:none; }
+    @media(max-width:700px) { .perspective-grid {grid-template-columns:1fr;} }
+    @media(max-width:520px) { .period-comparison {padding:14px;} .period-comparison .context-row {font-size:10px;gap:5px;} }
+    body[data-show-passes="false"] .pass-platform {display:none;}
+  
+    .video-analysis,.match-report {margin-top:22px;padding:22px;}
+    .video-analysis {border-color:#56604c;background:linear-gradient(140deg,#1c3038,#132139);}
+    .identified-player {display:flex;gap:8px 16px;align-items:center;flex-wrap:wrap;padding:14px 0;color:#e9d396;}
+    .identified-player strong {font-size:23px;}.identified-player small{width:100%;color:#9dafc5;}
+    .vision-metrics {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;}
+    .vision-metrics article,.report-player {padding:16px;border:1px solid #364c61;border-radius:12px;background:#102236;}
+    .vision-metrics h3{margin:0 0 10px;}.vision-tiles {display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:12px;margin:12px 0;}
+    .vision-tiles span,.vision-tiles small{display:block;color:#9fb2c9;font-size:12px;}.vision-tiles strong{display:block;color:#ffdf9c;font-size:20px;margin:4px 0;}
+    #video-options,#vision-audit,.ai-boundary {margin-top:14px;} .threshold-fields{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;}.threshold-fields input{width:95px;margin-left:8px;}
+    .vision-table-wrap{overflow:auto;}#vision-event-scores{border-collapse:collapse;width:100%;font-size:13px;margin:14px 0;}#vision-event-scores td,#vision-event-scores th{padding:9px 8px;border-bottom:1px solid #36495f;text-align:left;white-space:nowrap;}
+    #vision-proof {margin-top:18px;}#vision-proof h3 {font-size:15px;color:#f0d28a;}
+    .vision-proof-row {display:flex;flex-wrap:wrap;align-items:center;gap:7px 13px;padding:10px 0;border-top:1px solid #36495f;font-size:12px;}
+    .vision-proof-row strong {min-width:98px;color:#f0d28a;}.vision-proof-row a {color:#8eccf4;}.vision-proof-row span {color:#bbcee0;}
+    .report-tabs {display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;}.report-tabs button[aria-pressed=true]{border-color:#efd283;color:#f8db96;}
+    .report-timeline {display:grid;gap:10px;border-left:2px solid #6b6b4e;padding-left:14px;margin:18px 0;}.report-timeline button {display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:7px;white-space:normal;padding:14px;background:#11263b;}
+    .report-timeline time{color:#f0d28a;font-size:12px;}.report-timeline span{font-weight:400;color:#bfd0e3;line-height:1.5;}.report-achievement{white-space:normal;text-align:left;line-height:1.5;}
+    #report-evidence svg{display:block;width:100%;max-height:350px;margin:15px 0;}#report-content>p{line-height:1.7;}.ai-boundary{border-left:2px solid #a38dc4;padding-left:12px;}#video-analysis pre,#match-report pre{max-height:280px;overflow:auto;}
+
+
+    .scenario-lab { margin-top:20px; padding:20px; border:1px solid #3d6875; border-radius:14px; background:linear-gradient(120deg,#15313c,#132138); }
+    .scenario-top { display:flex; justify-content:space-between; gap:15px; align-items:start; flex-wrap:wrap; }
+    .scenario-top h2 { margin:6px 0 10px; }
+    .scenario-verified { color:#a7e1bf; border:1px solid #477d66; padding:6px 9px; border-radius:6px; font-size:11px; }
+    .scenario-verified.failed { color:#ffd18e; border-color:#90734d; }
+    .scenario-description { color:#bed3e3; line-height:1.6; margin:6px 0 15px; max-width:850px; }
+    .scenario-steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:8px; list-style:none; padding:0; margin:14px 0; }
+    .scenario-steps li { padding:13px; border:1px solid #3c526c; border-radius:8px; background:#0c1b2b80; font-size:12px; line-height:1.6; }
+    .scenario-steps li.passed { border-color:#477d66; }
+    .scenario-steps li.failed { border-color:#90734d; }
+    .scenario-steps small { display:block; color:#9bb6ce; margin-top:5px; }
+    .scenario-recognition { display:block; margin-top:8px; padding-top:8px; border-top:1px solid #3c526c; color:#b8cee0; }
+    .scenario-recognition.matched { color:#9de0b1; }.scenario-recognition.missed { color:#f1ae9d; }
+    .scenario-frame-expired { display:block; color:#869eb5; font-size:11px; }
+    .scenario-steps a,.scenario-actions a { color:#9ad3f8; }
+    .scenario-actions { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:14px; font-size:12px; }
+    .scenario-actions a { padding:10px 13px; border:1px solid #47788b; border-radius:8px; text-decoration:none; }
+    .scenario-actions button { font-size:12px; }
+    .scenario-footnote { color:#9cb6ca; font-size:11px; line-height:1.6; margin:12px 0 0; }
+    @media(max-width:520px) { .scenario-lab{padding:16px;} .scenario-steps{grid-template-columns:1fr;} .scenario-actions a{width:100%;} }
+
+
+.language-proof{margin:20px 0;padding:16px 18px;background:#102436;border:1px solid #3f627b;border-radius:12px}
+.language-proof summary{font-weight:650;color:#b9dbef}
+.language-proof a{color:#9ed7ff}.language-proof .source-links{font-size:13px;gap:8px}.language-versions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.language-version{padding:16px;border:1px solid #36536b;border-radius:10px;background:#152c40}.language-version h3{font-size:17px;line-height:1.5}.language-version p{line-height:1.6;font-size:14px}.language-version .caption-sample{font-size:13px;white-space:pre-line;padding:10px}
+.language-integrity{padding:10px 12px;border:1px solid #497862;border-radius:8px;color:#a3dfba;font-size:13px}.language-integrity.failed{color:#ffd09a;border-color:#8e6441}
+@media(max-width:900px){.language-versions{grid-template-columns:1fr}}
+
+</style>
+  <link rel="stylesheet" href="/jury-theme.css">
+  <link rel="stylesheet" href="/match-arc.css">
+  <link rel="stylesheet" href="/intelligence-provenance.css">
+  <link rel="stylesheet" href="/rhythm-lens.css">
+  <link rel="stylesheet" href="/story-languages.css">
+<link rel="stylesheet" href="/enhanced-ui.css"></head>
+<body>
+<main class="eh-live">
+  <header>
+    <div><h1>EVENT HORIZON</h1><div class="muted eyebrow">Studio · broadcast · streaming</div></div>
+    <nav class="product-nav" aria-label="Project navigation">
+    <a href="/journey" style="color:#b9e9cf;font-size:13px;text-decoration:none;padding:10px 0">Story decision trail ↗</a> <a href="/studio" style="color:#b9e9cf;font-size:13px;text-decoration:none;padding:10px 0">Broadcast rehearsal ↗</a> <a href="/replay-lab">Replay Lab</a>
+    <a id="full-match-demo" href="/demo" style="color:#b9e9cf;font-size:13px;text-decoration:none;padding:10px 0">Full match and verification ↗</a>
+    </nav>
+  </header>
+  <div class="workspace-toolbar">
+  <nav class="audience-bar" aria-label="Viewing role">
+    <button id="fan-mode" aria-pressed="true">Viewer</button>
+    <button id="editor-mode" aria-pressed="false">Broadcast desk</button>
+  </nav>
+    <div class="layout-buttons" aria-label="Analytics layout">
+      <button id="alongside" aria-pressed="true">Alongside the match</button>
+      <button id="over-image" aria-pressed="false">Over the image</button>
+    </div>
+  </div>
+      <div class="panel global-preferences">
+        <h2>Your match</h2>
+        <div class="preferences"><label>Viewing mode<select id="viewer-mode"><option value="fan">Fan</option><option value="analyst">Analyst</option><option value="player">Player Focus</option></select></label><label>Language<select id="language"><option value="en">English</option><option value="cs">Čeština</option><option value="de">Deutsch</option><option value="fr">Français</option><option value="it">Italiano</option><option value="es">Español</option><option value="pt">Português</option></select></label></div>
+        <div class="muted">Your team and player receive priority. The underlying facts stay shared.</div>
+        <div class="preferences">
+          <label>Favourite team<select id="favorite-team"><option value="all">Whole match</option><option value="0">Blue</option><option value="1">Red</option></select></label>
+          <label>Favourite player<select id="favorite-player"><option value="none">Not selected</option></select></label>
+        </div>
+      </div>
+
+  <details class="metric-settings panel"><summary>Statistics on screen</summary><div id="metric-options" class="metric-options"></div><p class="note" id="preference-status">Choices are saved in this browser.</p></details>
+  <div id="continuous-focus" class="continuous-focus" hidden></div>
+  <details class="session-settings">
+  <summary>Match settings and replay</summary>
+  <form class="match-controls" id="match-settings">
+    <label for="seed">Generator seed
+      <input id="seed" name="seed" type="number" min="0" max="4294967295" step="1" value="42" required>
+    </label>
+    <label for="scenario-select"><span id="scenario-select-label">Scenario</span>
+      <select id="scenario-select" name="scenario"><option value="open_play">Open play</option><option value="high_press">High press</option><option value="counterattack">Fast counterattack</option></select>
+    </label>
+    <button type="submit" id="start-match">Start</button>
+    <button type="button" id="replay-match">Replay this match</button>
+  </form>
+  <div class="stream-status" id="scenario-replay-note">The same seed and scenario reproduce the match. Events arrive as play unfolds.</div>
+  <div class="stream-status" id="stream-status">Connecting to the match…</div>
+  <div class="stream-status restart-message" id="restart-message" role="status" hidden></div>
+  </details>
+  <div class="scoreboard" aria-label="Match score">
+    <span class="blue">Blue</span><strong id="score">0 : 0</strong><span class="red">Red</span>
+    <span class="clock" id="clock">00:00 · 1st half</span>
+  </div>
+  <div class="connection" id="connection" hidden>Connection lost. Showing the last received frame.</div>
+  <div class="layout">
+    <section>
+      <div class="pitch">
+        <canvas id="pitch" width="1452" height="1008" aria-label="Synthetic football match: 11 players per team"></canvas>
+        <div class="overlay-stats" id="overlay-stats" hidden>
+          <h2>Match statistics</h2><div class="statistics" id="stats-over"></div>
+        </div>
+        <div class="overlay-story" id="overlay-story" hidden>
+          <strong id="title-over"></strong><p id="explanation-over"></p>
+        </div>
+      </div>
+      <div class="status"><span class="badge">SYNTHETIC MATCH · 11 × 11</span><span class="muted" id="phase">Kick-off</span></div>
+    </section>
+    <aside class="panel match-statistics-dock" id="panel">
+      <h2>Match statistics</h2>
+      <div class="statistics" id="stats-side"></div>
+      <p class="note">Passes: completed / attempts. Pressure: opponents within 5 m of the ball. Possession includes in-play time only.</p>
+      <article id="live-material" class="live-material" aria-live="polite"></article>
+      <div class="episode raw-event">
+        <div class="muted eyebrow" id="event-time">Latest episode</div>
+        <h2 id="title-side">Kick-off</h2><p id="explanation-side"></p>
+      </div>
+    </aside>
+  </div>
+    <div class="pipeline-error" id="pipeline-error" role="alert" hidden>Event processing stopped. The last verified statistics are preserved. Restart the match to continue.</div>
+  <div id="latency-strip" class="latency-strip"></div>
+  <section id="intelligence-provenance" class="intelligence-origin" data-localized="true" aria-label="Data and narrative origin"></section>
+  <section id="live-rhythm" class="rhythm-lens" data-localized="true" aria-label="Match rhythm"></section>
+  <section id="scenario-lab" class="scenario-lab" aria-label="Generator passport"></section>
+  <section id="video-analysis" class="panel video-analysis" aria-label="Video analytics"></section>
+  <section id="match-report" class="panel match-report"><div class="section-label">EVENT HORIZON</div><h2 id="match-report-title"></h2><nav id="report-tabs" class="report-tabs"></nav><div id="report-content"></div><article id="report-evidence" hidden></article></section>
+  <section id="experience" class="experience panel"><div class="muted">Connecting to analytics…</div></section>
+  <section class="pass-platform" aria-label="From pass to explanation">
+    <div class="pass-platform-header">
+      <div><div class="section-label">Pass → metrics → meaning</div><h2>From pass to explanation</h2></div>
+      <button id="pin-pass" disabled>Pin episode</button>
+    </div>
+    <div class="pass-platform-body">
+      <p class="muted" id="pass-waiting">Waiting for the first completed pass. Metrics and explanation appear automatically.</p>
+      <div id="pass-result" hidden>
+        <div class="pass-result-heading"><span class="live-dot"></span><span class="muted" id="pass-state"></span></div>
+        <p class="pass-explanation" id="pass-explanation"></p>
+        <div class="pass-evidence-grid">
+          <div class="pass-route" id="pass-route"></div>
+          <div class="pass-metrics" id="pass-metrics"></div>
+        </div>
+        <div class="note">Recent passes · select one to inspect</div>
+        <div class="recent-passes" id="recent-passes"></div>
+        <details class="automation-proof" id="automation-proof">
+          <summary>Verify the data path</summary>
+          <ol class="automation-flow" id="automation-flow"></ol>
+          <div class="automation-note" id="automation-note"></div>
+          <div class="automation-note" id="pass-sources"></div>
+        </details>
+      </div>
+    </div>
+  </section>
+  <section class="intelligence" id="fan-view">
+    <div class="story-header">
+      <div class="panel">
+        <div class="section-label">Match story</div>
+        <div class="focus-tag" id="fan-focus">Whole match</div>
+        <p class="story-summary" id="match-narrative">Following the game as it unfolds…</p>
+        <div class="note" id="narrator-status">Local factual narrative</div>
+      </div>
+    </div>
+    <section class="panel overview" aria-label="Automatic match overview">
+      <div class="overview-heading"><div><div class="section-label">The match through episodes</div><h2>How the game unfolded</h2><div class="muted" id="overview-count">Waiting for the first key episode</div></div><button id="latest-episode" disabled>Latest episode</button></div>
+      <div class="overview-layout" id="overview-layout" hidden><div class="episode-list" id="episode-list" aria-label="Episodes in match-time order"></div><article class="episode-detail" id="episode-detail"></article></div>
+      <p class="note">The overview grows as play unfolds. A selected breakdown stays open while the match continues.</p>
+    </section>
+    <section class="panel pulse" aria-label="Changes in play">
+      <div class="pulse-head"><div><div class="section-label">Match pulse</div><h2>What changed in front of goal</h2></div></div>
+      <div id="match-pulse"></div>
+      <p class="note">Adjacent periods of play are compared. Shot counts show activity in front of goal; they do not establish tactical causes.</p>
+    </section>
+    <div class="stream-heading"><div class="section-label">Streaming · your perspective</div><h2>Personalized cards</h2></div>
+    <div class="cards" id="key-moments"></div>
+    <div class="empty" id="no-moments">No key episodes yet. Shots, outcomes and verified changes will appear here.</div>
+  </section>
+  <section class="intelligence" id="editor-view" hidden>
+    <div class="desk-heading">
+      <div><div class="section-label">Broadcast partner workspace</div><h2>Prepare broadcast materials</h2><div class="muted">Select an episode → check sources and wording → select for display.</div></div>
+      <span class="tag" id="selected-count">Selected: 0</span>
+    </div>
+    <div class="desk-grid">
+      <aside class="panel"><h2>Broadcast candidates</h2><div class="queue" id="editor-queue"></div><div class="muted" id="empty-queue">Waiting for the first key episode.</div></aside>
+      <section class="panel inspector" id="inspector"><div class="muted">Select material to review.</div></section>
+    </div>
+    <div class="preview" id="broadcast-preview"><div class="section-label">Broadcast card preview</div><p>No material selected yet. This is a local preview.</p></div>
+    <div class="editor-feedback" id="editor-feedback" role="status"></div>
+  </section>
+  <details id="delivery-health" class="panel delivery-health"><summary id="delivery-heading">Materials and display latency</summary><div id="delivery-detail"></div></details>
+  <footer>Simplified 2D football model. Passes, shots, score and possession follow player actions and ball movement. Pressure measures opponent proximity, not tactical intent.</footer>
+</main>
+<script src="/preferences.js"></script>
+<script>
+  const canvas = document.querySelector('#pitch');
+  const ctx = canvas.getContext('2d');
+  let state = null, before = null, received = 0;
+  let runId = null, lastEventId = 0, requestEpoch = 0, restarting = false;
+  let mode = 'fan', insightRevision = -1, deskRevision = '', insights = null, desk = null;
+  const operatorRequired = document.body.dataset.operatorRequired === 'true';
+  const operatorPage = location.pathname === '/editor';
+  if (operatorRequired && !operatorPage) document.querySelector('.session-settings').hidden = true;
+  let inspectedId = null, inspectedVersion = null, deskBusy = false;
+  let queueVersion = '';
+  let overviewRevision = '', overviewData = null, selectedEpisode = null, materialFormat = 'studio';
+  let pipelineRevision = -1, pipelineData = null, pinnedPass = null, currentPass = null;
+  let statsVersion='';
+  let passVisible = false, shownPasses = new Set();
+  let prefs = EHPreferences.defaults();
+  let experienceRevision='';
+  try {prefs=EHPreferences.load(localStorage);} catch(error) {}
+  const playerOptions = document.querySelector('#favorite-player');
+  for (const team of [0,1]) for (let number = 1; number <= 11; number++) {
+    const option = document.createElement('option');
+    option.value = `${team}:${number}`; option.textContent = `${team ? 'Red' : 'Blue'} · #${number}`;
+    playerOptions.append(option);
+  }
+  document.querySelector('#favorite-team').value = prefs.team;
+  playerOptions.value = prefs.player;
+  document.querySelector('#viewer-mode').value=prefs.audience;
+  document.querySelector('#language').value=prefs.language;
+  document.body.dataset.showPasses=String(prefs.metrics.includes('passes'));
+  window.EHSettings=()=>({...prefs,role:mode});
+  const metricNames={possession:'Possession',passes:'Passes',shots:'Shots',pressure:'Pressure',attacks:'Attacks',tempo:'Tempo',progress:'Forward progress',tackles:'Tackles',movement:'Player movement'};
+  document.querySelector('#metric-options').innerHTML=EHPreferences.keys.map(key=>`<label><input type="checkbox" value="${key}" ${prefs.metrics.includes(key)?'checked':''}>${metricNames[key]}</label>`).join('');
+  function savePreferences(){let saved=false;try{saved=EHPreferences.save(localStorage,prefs);}catch(error){}document.querySelector('#preference-status').textContent=saved?'Preferences saved for the next viewing.':'Preferences could not be saved in this browser.';}
+
+  function changePreferences() {
+    const priorLanguage=prefs.language;
+    prefs = {team: document.querySelector('#favorite-team').value, player: playerOptions.value, audience:document.querySelector('#viewer-mode').value, language:document.querySelector('#language').value,metrics:[...document.querySelectorAll('#metric-options input:checked')].map(input=>input.value),overlay:overImage};
+    document.body.dataset.showPasses=String(prefs.metrics.includes('passes'));
+    if(priorLanguage!==prefs.language) pinnedPass=null;
+    experienceRevision=''; overviewRevision=''; pipelineRevision=-1; window.EHI18n?.apply(prefs.language);
+    insightRevision = -1; deskRevision = ''; requestEpoch += 1;
+    savePreferences();
+  }
+  document.querySelector('#metric-options').onchange=changePreferences;
+  document.querySelector('#favorite-team').onchange = changePreferences;
+  playerOptions.onchange = changePreferences;
+  document.querySelector('#viewer-mode').onchange=changePreferences;
+  document.querySelector('#language').onchange=changePreferences;
+  function setMode(next) {
+    mode = next; experienceRevision='';
+    document.querySelector('#experience').hidden=mode==='editor'; window.EHStory?.refresh(); requestEpoch += 1; insightRevision = -1; deskRevision = '';
+    document.querySelector('#fan-view').hidden = mode !== 'fan';
+    document.querySelector('#editor-view').hidden = mode !== 'editor';
+    document.querySelector('#fan-mode').setAttribute('aria-pressed', String(mode === 'fan'));
+    document.querySelector('#editor-mode').setAttribute('aria-pressed', String(mode === 'editor'));
+  }
+  document.querySelector('#fan-mode').onclick = () => setMode('fan');
+  document.querySelector('#editor-mode').onclick = () => {
+    if (operatorRequired && !operatorPage) location.assign('/editor');
+    else setMode('editor');
+  };
+  if (operatorPage) setMode('editor');
+  const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const statusNames = {draft: 'Awaiting review', checked: 'Editor reviewed', selected: 'Selected for broadcast', held: 'Held'};
+  function routeMarkup(pass) {
+    return window.EHField.passRoute(pass)+`<div class="pass-route-caption"><strong>#${pass.sender} → #${pass.receiver}</strong><span>Ball route in this episode · attack ${pass.direction === 1 ? 'right →' : '← left'}</span></div>`;
+  }
+  function renderPassPipeline(data) {
+    pipelineData = data;
+    document.querySelector('#pipeline-error').hidden = data.status === 'ok';
+    const latest = data.receipts.at(-1);
+    if (pinnedPass) pinnedPass = data.receipts.find(p=>p.event_id === pinnedPass.event_id) || pinnedPass;
+    currentPass = pinnedPass || latest || null;
+    document.querySelector('#pass-waiting').hidden = !!currentPass;
+    document.querySelector('#pass-result').hidden = !currentPass;
+    const pin = document.querySelector('#pin-pass'); pin.disabled = !currentPass;
+    pin.textContent = pinnedPass ? 'Follow live play' : 'Pin episode';
+    if (!currentPass) return;
+    const p = currentPass;
+    document.querySelector('#pass-result').dataset.eventId = p.event_id;
+    document.querySelector('#pass-state').textContent = `${pinnedPass ? 'Pinned' : 'Live overview'} · ${clock(p.time)} · ${p.team ? 'Red' : 'Blue'} · #${p.event_id}`;
+    document.querySelector('#pass-explanation').textContent = p.explanation;
+    const route=document.querySelector('#pass-route'),routeKey=JSON.stringify([runId,p.event_id,p.origin,p.end,prefs.language]);
+    if(route.dataset.routeKey!==routeKey){route.dataset.routeKey=routeKey;route.innerHTML=routeMarkup(p);}
+    const progress = `${p.progress_m > 0 ? '+' : ''}${p.progress_m.toFixed(1)} m`;
+    document.querySelector('#pass-metrics').innerHTML = [
+      ['Pass distance',`${p.distance_m.toFixed(1)} m`,'From ball coordinates'],
+      ['Along the attacking direction',progress,escapeHtml(p.label)],
+      ['Team completed passes',`${p.passes_before} → ${p.passes_after}`,'Counter updated by event'],
+      ['In this possession',p.possession_passes,'Completed passes'],
+    ].map(([label,value,note])=>`<div class="pass-metric"><span>${label}</span><strong>${value}</strong><small>${note}</small></div>`).join('');
+    const screen = p.displayed || shownPasses.has(p.event_id);
+    document.querySelector('#automation-flow').innerHTML = [
+      ['01','Event received',`Pass #${p.event_id}`],
+      ['02','Metrics calculated',`${p.passes_before} → ${p.passes_after} completed`],
+      ['03','Explanation ready','From verified coordinates'],
+      ['04',screen ? 'Display confirmed' : 'Awaiting display',screen ? 'The card was visible in the browser' : 'Confirmation after appearing in view'],
+    ].map(([step,title,note],i)=>`<li ${i === 3 && !screen ? 'class="pending"' : ''}><span>${step}</span><strong>${title}</strong><span>${note}</span></li>`).join('');
+    const timing = p.processing_ms < .1 ? 'under 0.1 ms' : `${p.processing_ms.toFixed(1)} ms`;
+    document.querySelector('#automation-note').textContent = `Events received: ${data.received} · processed: ${data.processed}. Server metric and text processing: ${timing}. Processing time; excludes network delay.`;
+    document.querySelector('#pass-sources').textContent = p.source_events.map(e=>`${clock(e.time)} · #${e.id} · ${e.title}`).join(' → ');
+    const recent = document.querySelector('#recent-passes');
+    recent.innerHTML = [...data.receipts].reverse().map(item=>`<button data-event="${item.event_id}" aria-pressed="${item.event_id === p.event_id}">${clock(item.time)} · #${item.sender} → #${item.receiver}</button>`).join('');
+    for (const button of recent.querySelectorAll('button')) button.onclick = () => {pinnedPass=data.receipts.find(item=>item.event_id === Number(button.dataset.event));renderPassPipeline(pipelineData);};
+    acknowledgeVisiblePass();
+  }
+  document.querySelector('#pin-pass').onclick = () => {pinnedPass=pinnedPass ? null : currentPass; if(pipelineData) renderPassPipeline(pipelineData);};
+  function acknowledgeVisiblePass() {
+    if (!passVisible || document.hidden || !currentPass || shownPasses.has(currentPass.event_id)) return;
+    const eventId = currentPass.event_id, observedRun = runId;
+    requestAnimationFrame(async () => {
+      if (!passVisible || document.hidden || runId !== observedRun || currentPass?.event_id !== eventId || shownPasses.has(eventId)) return;
+      shownPasses.add(eventId);
+      try {
+        const response = await fetch('/displayed',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({run_id:observedRun,event_id:eventId}),signal:AbortSignal.timeout(2500)});
+        if (!response.ok) throw Error('Display acknowledgement failed');
+        pipelineRevision = -1;
+      } catch(error) { if(runId === observedRun) shownPasses.delete(eventId); }
+    });
+  }
+  const passObserver = new IntersectionObserver(entries=>{passVisible=entries[0].isIntersecting;acknowledgeVisiblePass();},{threshold:.1});
+  passObserver.observe(document.querySelector('#pass-explanation'));
+  document.addEventListener('visibilitychange',acknowledgeVisiblePass);
+  function metricsMarkup(metrics) {
+    const preference={attack_passes:'passes',window_shots:'shots',to_shot_seconds:'tempo'};
+    metrics=metrics.filter(metric=>preference[metric.key]?prefs.metrics.includes(preference[metric.key]):prefs.metrics.length>0);
+    return `<div class="material-metrics">${metrics.map(metric => {
+      const value = Array.isArray(metric.value) ? metric.value.join(':') : String(metric.value);
+      const suffix = metric.unit === 'seconds' ? ' s' : '';
+      const interval = metric.interval ? `<br>${clock(metric.interval[0])}–${clock(metric.interval[1])}` : '';
+      return `<div class="material-metric"><span>${escapeHtml(metric.label)}${interval}</span><strong>${escapeHtml(value + suffix)}</strong></div>`;
+    }).join('')}</div>`;
+  }
+  function renderOverview(data) {
+    overviewData = data; window.EHOverview=data;
+    const entries = data.entries;
+    if (!entries.some(entry=>entry.id === selectedEpisode)) selectedEpisode=null;
+    const selected = entries.find(entry=>entry.id === selectedEpisode) || entries.at(-1);
+    document.querySelector('#overview-count').textContent = entries.length ? `Episodes: ${entries.length} · complete: ${entries.filter(entry=>entry.complete).length}` : 'Waiting for the first key episode';
+    document.querySelector('#overview-layout').hidden = !entries.length;
+    document.querySelector('#latest-episode').disabled = !entries.length || selectedEpisode === null;
+    const list = document.querySelector('#episode-list');
+    const scroll = list.scrollTop;
+    list.innerHTML = entries.map(entry=>`<button class="episode-link" data-episode="${escapeHtml(entry.id)}" aria-pressed="${entry.id === selected?.id}"><time>${clock(entry.time)}</time><span>${escapeHtml(entry.title)}${entry.complete ? '' : ' · outcome pending'}</span></button>`).join('');
+    for (const button of list.querySelectorAll('button')) button.onclick = () => {selectedEpisode=button.dataset.episode; if(window.EHViewer) window.EHViewer.selection=selectedEpisode; experienceRevision='';renderOverview(overviewData);};
+    list.scrollTop = selectedEpisode === null ? list.scrollHeight : scroll;
+    const detail = document.querySelector('#episode-detail');
+    detail.innerHTML = selected ? `<div class="section-label">${clock(selected.time)} · ${selected.complete ? 'episode complete' : 'outcome pending'}</div><h3>${escapeHtml(selected.title)}</h3><p>${escapeHtml(selected.what)}</p><div class="question">Why this belongs in the match story</div><p>${escapeHtml(selected.why)}</p><p class="note">${escapeHtml(selected.change)}</p><div class="note">Sources: ${selected.evidence_ids.map(id=>`#${id}`).join(', ')} · ${selected.verified ? 'data verified' : 'data needs checking'}</div>` : '';
+  }
+  window.EHChooseEpisode=id=>{selectedEpisode=id;if(window.EHViewer)window.EHViewer.selection=id;experienceRevision='';requestEpoch+=1;if(overviewData)renderOverview(overviewData);};
+  document.querySelector('#latest-episode').onclick = () => {selectedEpisode=null;if(window.EHViewer) window.EHViewer.selection=null;experienceRevision='';if(overviewData) renderOverview(overviewData);};
+  function renderMaterialOutput(moment) {
+    const formats = moment.materials.formats;
+    for (const button of document.querySelectorAll('[data-format]')) button.setAttribute('aria-pressed',String(button.dataset.format === materialFormat));
+    let markup = '';
+    if (materialFormat === 'studio') {
+      const material = formats.studio;
+      markup = `<div class="section-label">Studio · presenter material</div><h3>${escapeHtml(material.title)}</h3><p class="presenter-lead">${escapeHtml(material.lead)}</p><h4>Talking points</h4><ol class="presenter-points">${material.talking_points.map(point=>`<li>${escapeHtml(point)}</li>`).join('')}</ol>${attackPathMarkup({attack_path:material.attack_path})}<h4>Breakdown metrics</h4>${metricsMarkup(material.metrics)}<h4>Participants in the evidence sequence</h4><p>${material.participants.map(player=>`${player.team ? 'Red' : 'Blue'} #${player.number}`).join(' · ')}</p><p class="note">${escapeHtml(material.boundary)} Episode sources are available below.</p>`;
+    } else if (materialFormat === 'broadcast') {
+      const material = formats.broadcast;
+      markup = `<div class="section-label">Broadcast · short caption</div><p class="note">Automatic draft. Select for broadcast after reviewing the caption below.</p><div class="caption-sample">${escapeHtml(material.text)}</div><p class="note">${material.text.length}/${material.max_chars} characters · ${moment.materials.ready ? 'episode outcome known' : 'draft: awaiting outcome and review'}</p>`;
+    } else if (materialFormat === 'stream') {
+      const material = formats.stream;
+      markup = `<div class="section-label">Streaming · personalized card</div><div class="stream-focus">${escapeHtml(material.focus)} · ${escapeHtml(material.reason)}</div><h3>${escapeHtml(material.title)}</h3><p>${escapeHtml(material.summary)}</p><div class="personal-story">${escapeHtml(material.personal)}</div><p>${escapeHtml(material.meaning)}</p>${metricsMarkup(material.metrics)}`;
+    }
+    document.querySelector('#material-output').innerHTML = markup;
+  }
+  function evidenceMarkup(moment) {
+    return `<details class="evidence"><summary>Sources · ${moment.evidence.length} events</summary><ol>${moment.evidence.map(e =>
+      `<li><strong>${clock(e.time)} · #${e.id} · ${escapeHtml(e.title)}</strong><br>${escapeHtml(e.text)}</li>`).join('')}</ol></details>`;
+  }
+  function attackPathMarkup(moment) {
+    if (!moment.attack_path?.length) return '';
+    return `<ol class="attack-path" aria-label="Attack development">${moment.attack_path.map(stage => `<li><small>${clock(stage.time)}</small>${escapeHtml(stage.label)}</li>`).join('')}</ol>`;
+  }
+  function checksMarkup(moment) {
+    const checks = moment.checks || [], passed = checks.filter(c=>c.passed).length;
+    return `<details class="fact-checks"><summary>Automatic data checks · ${passed}/${checks.length}</summary><ul>${checks.map(check => `<li><span class="${check.passed ? 'ok' : 'failed'}">${check.passed ? '✓' : '!'}</span><span><strong>${escapeHtml(check.label)}</strong><br>${escapeHtml(check.detail)}</span></li>`).join('')}</ul></details>`;
+  }
+  function renderPulse(window) {
+    const maximum = Math.max(1,...window.shots,...window.previous_shots);
+    const bar = (value, team) => `<div class="shot-bar ${team ? 'red' : 'blue'}"><strong>${value}</strong><i style="--bar:${Math.round(value/maximum*75)}%"></i></div>`;
+    const previous = window.end >= 120 ? 'A minute earlier' : 'No complete minute yet';
+    const current = window.end >= 60 ? 'Latest 60 s' : `First ${Math.floor(window.end)} s`;
+    document.querySelector('#match-pulse').innerHTML = `<div class="comparison"><span class="period">Shots</span><span class="period">${previous}</span><span class="period">${current}</span><span class="blue">Blue</span>${window.end >= 120 ? bar(window.previous_shots[0],0) : '<span class="muted">—</span>'}${bar(window.shots[0],0)}<span class="red">Red</span>${window.end >= 120 ? bar(window.previous_shots[1],1) : '<span class="muted">—</span>'}${bar(window.shots[1],1)}</div><div class="possession-track" aria-label="Possession in the current period"><span class="blue-half" style="width:${window.possession[0]}%"></span><span class="red-half" style="width:${window.possession[1]}%"></span></div><div class="possession-labels"><span class="blue">Blue · ${window.possession[0]}%</span><span>Possession</span><span class="red">${window.possession[1]}% · Red</span></div>`;
+  }
+  function sectionsMarkup(moment) {
+    return [['Event',moment.what],['Why it matters',moment.why],['How the game changes',moment.change]].map(([label,text]) =>
+      `<div class="question">${label}</div><p>${escapeHtml(text)}</p>`).join('');
+  }
+  function auditMarkup(moment) {
+    const records = (desk?.audit || []).filter(entry=>entry.moment_id === moment.id && (entry.language || 'en') === prefs.language);
+    if (!records.length) return '';
+    const names = {review:'Copy reviewed by editor',select:'Material selected',hold:'Material held'};
+    return `<details class="audit"><summary>Editorial review history · ${records.length}</summary><ol>${records.map(record=>`<li>${clock(record.time)} · ${names[record.action] || ''} · version ${record.revision}</li>`).join('')}</ol>${moment.editorial.receipt ? `<div>Review receipt: <code>${escapeHtml(moment.editorial.receipt)}</code></div>` : '<div>Current version not reviewed yet.</div>'}</details>`;
+  }
+  function renderInsights(data) {
+    insights = data;
+    document.querySelector('#fan-focus').textContent = data.focus;
+    document.querySelector('#match-narrative').textContent = data.summary;
+    renderPulse(data.window);
+    document.querySelector('#no-moments').hidden = data.moments.length > 0;
+                                                              
+    const opened = new Set([...document.querySelectorAll('#key-moments .moment-card details[open]')].map(detail => detail.closest('.moment-card').dataset.id + ':' + detail.className));
+    document.querySelector('#key-moments').innerHTML = data.moments.map(m => {
+      const stream = m.materials.formats.stream;
+      return `<article class="moment-card ${m.kind === 'goal' ? 'goal' : ''}" data-id="${escapeHtml(m.id)}"><div class="card-meta"><span>${clock(m.time)}</span><span class="tag ${m.complete ? '' : 'pending'}">${m.complete ? 'Episode complete' : 'Waiting for the shot outcome'}</span></div><div class="stream-focus">${escapeHtml(stream.focus)} · ${escapeHtml(stream.reason)}</div><h3>${escapeHtml(stream.title)}</h3>${m.personalization.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join(' ')}<p>${escapeHtml(stream.summary)}</p><div class="personal-story">${escapeHtml(stream.personal)}</div>${metricsMarkup(stream.metrics)}<details class="stream-details"><summary>Complete episode breakdown</summary>${attackPathMarkup(m)}${sectionsMarkup(m)}<div class="note">${m.source === 'foundry' ? 'AI narrative · source checked' : 'Factual narrative'}</div>${checksMarkup(m)}${evidenceMarkup(m)}</details></article>`;
+    }).join('');
+    for (const detail of document.querySelectorAll('#key-moments .moment-card details')) if (opened.has(detail.closest('.moment-card').dataset.id + ':' + detail.className)) detail.open = true;
+  }
+  function renderDesk(data) {
+    desk = data;
+    document.querySelector('#selected-count').textContent = `Selected: ${data.selected_count}`;
+    document.querySelector('#empty-queue').hidden = data.items.length > 0;
+    if (!data.items.some(m=>m.id === inspectedId)) { inspectedId = data.items[0]?.id || null; inspectedVersion = null; }
+    const queue = document.querySelector('#editor-queue');
+    const nextQueueVersion = prefs.language + ':' + data.items.map(m=>`${m.id}:${m.revision}:${m.editorial.status}`).join('|');
+    if (queueVersion !== nextQueueVersion) {
+      const scroll = queue.scrollTop;
+      queue.innerHTML = data.items.map(m => `<button class="queue-item" data-moment="${escapeHtml(m.id)}" aria-pressed="${m.id === inspectedId}"><small>${clock(m.time)} · ${m.complete ? statusNames[m.editorial.status] : 'Outcome pending'}</small><span>${escapeHtml(m.title)}</span></button>`).join('');
+      for (const button of queue.querySelectorAll('button')) button.onclick = () => { inspectedId=button.dataset.moment; inspectedVersion=null; renderDesk(desk); };
+      queue.scrollTop = scroll;
+      queueVersion = nextQueueVersion;
+    }
+    for (const button of queue.querySelectorAll('button')) button.setAttribute('aria-pressed',String(button.dataset.moment === inspectedId));
+    renderInspector();
+    const preview = document.querySelector('#broadcast-preview');
+    preview.innerHTML = data.active ? `<div class="section-label">Preview · ${clock(data.active.time)}</div><p>${escapeHtml(data.active.editorial.copy)}</p><div class="note">Editor selected. Local preview.</div>` : '<div class="section-label">Short broadcast caption</div><p>No material selected yet. This is a local preview.</p>';
+  }
+  function renderInspector() {
+    const moment = desk?.items.find(m=>m.id === inspectedId);
+    const container = document.querySelector('#inspector');
+    if (!moment) {container.innerHTML = '<div class="muted">Select material to review.</div>';return;}
+    const version = `${moment.id}:${moment.revision}:${moment.editorial.status}:${moment.editorial.receipt || ''}:${moment.materials.language}:${moment.materials.formats.stream.focus}:${moment.materials.formats.stream.personal}`;
+    if (inspectedVersion === version) return;
+    const changed = inspectedVersion !== null;
+    inspectedVersion = version;
+    container.innerHTML = `<div class="section-label">${clock(moment.time)} · version ${moment.revision}</div><h3>${escapeHtml(moment.title)}</h3><div class="checks"><span class="tag ${moment.verified ? '' : 'pending'}">${moment.verified ? 'Sources found' : 'Sources unverified'}</span><span class="tag ${moment.complete ? '' : 'pending'}">${moment.complete ? 'Outcome known' : 'Outcome pending'}</span><span class="tag">${statusNames[moment.editorial.status]}</span></div><div class="section-label">One episode · three formats</div><nav class="material-switch" aria-label="Material format"><button data-format="studio">Presenter</button><button data-format="broadcast">Broadcast</button><button data-format="stream">Streaming</button></nav><div class="material-output" id="material-output"></div>${checksMarkup(moment)}${evidenceMarkup(moment)}${auditMarkup(moment)}<p class="note">Review the short broadcast caption below. Full presenter material is available above.</p><label for="editor-copy">Broadcast caption · up to 140 characters</label><textarea id="editor-copy" maxlength="140"></textarea><div class="copy-count" id="copy-count"></div><div class="actions"><button id="review-material" ${moment.complete && moment.verified ? '' : 'disabled'}>Confirm review</button><button class="primary-action" id="select-material" ${moment.editorial.status === 'checked' ? '' : 'disabled'}>Select for broadcast</button><button id="hold-material">Hold</button></div>${changed ? '<div class="note">The version or status changed. Check the current copy.</div>' : ''}`;
+    for (const button of container.querySelectorAll('[data-format]')) button.onclick = () => {materialFormat=button.dataset.format;renderMaterialOutput(moment);};
+    renderMaterialOutput(moment);
+    const copy = document.querySelector('#editor-copy');
+    copy.value = moment.editorial.copy;
+    const count = () => {document.querySelector('#copy-count').textContent = `${copy.value.length}/140 characters · up to two lines`;};
+    count();
+    copy.oninput = () => {document.querySelector('#select-material').disabled = true;count();};
+    document.querySelector('#review-material').onclick = () => editorialAction('review');
+    document.querySelector('#select-material').onclick = () => editorialAction('select');
+    document.querySelector('#hold-material').onclick = () => editorialAction('hold');
+  }
+  async function editorialAction(action) {
+    if (deskBusy) return;
+    const moment = desk?.items.find(m=>m.id === inspectedId);
+    if (!moment) return;
+    deskBusy = true;
+    const feedback = document.querySelector('#editor-feedback');
+    for (const b of document.querySelectorAll('#inspector button')) b.disabled = true;
+    try {
+      const response = await fetch('/editorial', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({run_id:runId,moment_id:moment.id,revision:moment.revision,fact_fingerprint:moment.fact_fingerprint,action,language:prefs.language,copy:document.querySelector('#editor-copy').value}),signal:AbortSignal.timeout(5000)});
+      const result = await response.json();
+      if (!response.ok) throw Error(result.error || 'Could not update the material');
+      feedback.textContent = action === 'review' ? 'Review confirmed. The material can be selected for broadcast.' : action === 'select' ? 'Material selected. The card is available in the local preview.' : 'Material held.';
+    } catch (error) {feedback.textContent = error.message;}
+    finally {deskBusy=false;deskRevision='';inspectedVersion=null;}
+  }
+  let overImage = false;
+  function setLayout(over) {
+    overImage = over;
+    document.body.classList.toggle('overlay-mode', over);
+    document.querySelector('#panel').hidden = over;
+    document.querySelector('#overlay-stats').hidden = !over;
+    document.querySelector('#overlay-story').hidden = !over;
+    document.querySelector('#alongside').setAttribute('aria-pressed', String(!over));
+    document.querySelector('#over-image').setAttribute('aria-pressed', String(over));
+    prefs.overlay=over;window.EHStory?.refresh();
+  }
+  setLayout(prefs.overlay);
+  document.querySelector('#alongside').onclick = () => {setLayout(false);savePreferences();};
+  document.querySelector('#over-image').onclick = () => {setLayout(true);savePreferences();};
+  function clock(seconds) {
+    return `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+  }
+  function showStats(s) {
+    const stats=s.presentation?.statistics || [];
+    const teams=prefs.language==='en'?['Blue','Red']:prefs.language==='cs'?['Modří','Červení']:['Blue','Red'];
+    const html=`<div></div>${teams.map((name,t)=>`<div class="team ${t?'red':'blue'}">${name}</div>`).join('')}`+stats.map(row=>`<div class="label">${escapeHtml(row.label)}</div>${row.value.map(value=>`<div class="value">${escapeHtml(value)}${row.unit==='percent'?'%':''}</div>`).join('')}`).join('');
+    if(statsVersion!==html){statsVersion=html;document.querySelector('#stats-side').innerHTML=html;document.querySelector('#stats-over').innerHTML=html;}
+
+    document.querySelector('#score').textContent = s.score.join(' : ');
+    document.querySelector('#clock').textContent = clock(s.clock) + (s.finished ? ({de:' · Spielende',en:' · full time',cs:' · konec'}[globalThis.EHLocale?.base(prefs.language)??prefs.language]) : ({de:` · ${s.period}. Halbzeit`,en:` · ${s.period===1?'1st':'2nd'} half`,cs:` · ${s.period}. poločas`}[globalThis.EHLocale?.base(prefs.language)??prefs.language]));
+    document.querySelector('#phase').textContent = s.phase;
+    document.querySelector('#stream-status').textContent = ({de:`Aktueller Startwert: ${s.settings.seed} · Empfangene Ereignisse: ${lastEventId}`,en:`Current seed: ${s.settings.seed} · Events received: ${lastEventId}`,cs:`Aktuální seed: ${s.settings.seed} · Přijaté události: ${lastEventId}`}[globalThis.EHLocale?.base(prefs.language)??prefs.language]);
+    document.querySelector('#narrator-status').textContent = s.narrator_status;
+    window.EHIntelligenceProvenance?.update(s.intelligence_provenance,prefs.language);
+    document.querySelector('#event-time').textContent = `${clock(s.event.time)} · latest event`;
+    for (const position of ['side', 'over']) {
+      document.querySelector(`#title-${position}`).textContent = s.event.title;
+      document.querySelector(`#explanation-${position}`).textContent = s.event.text;
+    }
+    window.EHStory?.update(s.presentation,s.experience?.focus,window.EHRequestTiming||{});
+    window.EHExplanationLanguages?.live(s.experience,prefs);
+
+  }
+  function applyState(next) {
+    if(next.language&&next.language!==prefs.language||next.audience&&next.audience!==prefs.audience)return;
+    const newRun = next.run_id !== runId;
+    if (newRun) {
+      experienceRevision=''; window.EHViewer?.reset();
+      overviewRevision=''; overviewData=null; selectedEpisode=null; renderOverview({entries:[],total:0});
+      pipelineRevision=-1; pipelineData=null; pinnedPass=null; currentPass=null; shownPasses=new Set();
+      renderPassPipeline({status:'ok',receipts:[],received:0,processed:0});
+      insightRevision = -1; deskRevision = ''; inspectedId = null; inspectedVersion = null;
+      insights = null; desk = null;
+      document.querySelector('#editor-feedback').textContent = '';
+      renderDesk({items:[],selected_count:0,active:null});
+    }
+    if (next.reset || newRun) lastEventId = 0;
+    for (const event of next.events) {
+      if (event.id !== lastEventId + 1 || event.time > next.clock) throw Error('Events arrived out of sequence');
+      lastEventId = event.id;
+    }
+    if (lastEventId !== next.event_count) throw Error('Missing events');
+    before = newRun ? next : (state || next);
+    state = next;
+    runId = next.run_id;
+    received = performance.now();
+    if (next.insights) {insights=next.insights;if(mode==='fan')renderInsights(next.insights); insightRevision=next.insight_revision;}
+    if (next.overview) {renderOverview(next.overview); overviewRevision=next.overview_revision;}
+    if(next.experience) {window.EHViewer?.update(next.experience); experienceRevision=next.experience_revision;}
+    window.EHI18n?.apply(prefs.language);
+    if (next.pipeline) {pipelineData=next.pipeline;renderPassPipeline(next.pipeline);document.querySelector('#pipeline-error').hidden=next.pipeline.status==='ok'; pipelineRevision=next.pipeline_revision;}
+    if (next.editorial) {renderDesk(next.editorial); deskRevision=next.desk_revision;}
+    if (newRun) {document.querySelector('#seed').value = next.settings.seed;document.querySelector('#scenario-select').value=next.settings.scenario||'open_play';}
+    window.EHScenario?.update(next);
+    window.EHVideo?.update(next);
+    showStats(state);
+    window.dispatchEvent(new CustomEvent('eh:frame',{detail:{frame:state,insights}}));
+    document.querySelector('#connection').hidden = true;
+    acknowledgeVisiblePass();
+  }
+  async function restartMatch(replay) {
+    const form = document.querySelector('#match-settings');
+    if (restarting || (!replay && !form.reportValidity())) return;
+    restarting = true;
+    requestEpoch += 1;
+    const message = document.querySelector('#restart-message');
+    message.hidden = true;
+    for (const id of ['start-match', 'replay-match']) document.getElementById(id).disabled = true;
+    try {
+      const body = replay ? {} : {seed: Number(document.querySelector('#seed').value), scenario: document.querySelector('#scenario-select').value};
+      const response = await fetch('/restart', {
+        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body),
+        signal: AbortSignal.timeout(5000),
+      });
+      const next = await response.json();
+      if (!response.ok) throw Error(next.error || 'Could not start the match');
+      const query=new URLSearchParams({view:mode,team:prefs.team,player:prefs.player,audience:prefs.audience,language:prefs.language,metrics:prefs.metrics.join(',')});
+      const refreshed=await fetch('/state?'+query,{cache:'no-store'});
+      if(!refreshed.ok)throw Error('Unable to load restarted match');
+      applyState(await refreshed.json());
+      message.textContent = (replay?{de:`Dasselbe Spiel wurde neu gestartet. Startwert: ${next.settings.seed}.`,en:`The same match restarted. Seed: ${next.settings.seed}.`,cs:`Stejný zápas byl spuštěn znovu. Seed: ${next.settings.seed}.`}:{de:`Spiel gestartet. Startwert: ${next.settings.seed}.`,en:`Match started. Seed: ${next.settings.seed}.`,cs:`Zápas spuštěn. Seed: ${next.settings.seed}.`})[prefs.language];
+    } catch (error) {
+      message.textContent = error.message;
+    } finally {
+      message.hidden = false;
+      restarting = false;
+      for (const id of ['start-match', 'replay-match']) document.getElementById(id).disabled = false;
+    }
+  }
+  document.querySelector('#match-settings').onsubmit = event => {event.preventDefault(); restartMatch(false);};
+  document.querySelector('#replay-match').onclick = () => restartMatch(true);
+  async function poll() {
+    const epoch = requestEpoch;
+    try {
+      if (restarting) return;
+      const query = new URLSearchParams({after: lastEventId});
+      query.set('view',mode); query.set('team',prefs.team); query.set('player',prefs.player);
+      query.set('audience',prefs.audience);query.set('language',prefs.language);
+      query.set('compact','1');query.set('scene_revision',window.EHViewer?.sceneRevision||'');
+      query.set('episode',window.EHViewer?.selection || '');query.set('experience_revision',experienceRevision);
+      query.set('overview_revision',overviewRevision);
+      query.set('pipeline_revision',pipelineRevision);
+      query.set('insight_revision',insightRevision); query.set('desk_revision',deskRevision);
+      if (runId !== null) query.set('run', runId);
+      query.set('metrics',prefs.metrics.join(','));
+      const requestStarted=performance.now();
+      const response = await fetch('/state?' + query, {cache: 'no-store', signal: AbortSignal.timeout(2500)});
+      if (!response.ok) throw Error('HTTP ' + response.status);
+      const next = await response.json();
+      window.EHRequestTiming={requestMs:performance.now()-requestStarted,receivedAt:performance.now()};
+      if (epoch === requestEpoch) applyState(next);
+    } catch (error) {
+      if (epoch === requestEpoch && !restarting) document.querySelector('#connection').hidden = false;
+    } finally {
+      setTimeout(poll, 100);
+    }
+  }
+  function line(x1, y1, x2, y2) {
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  }
+  function circle(x, y, r) {
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  }
+  function draw(now) {
+    if(window.EHVideo?.draw(ctx,canvas)){requestAnimationFrame(draw);return;}
+                                                                             
+    const mix = Math.min(1, Math.max(0, (now - received) / 100));
+    const lerp = (a, b) => a + (b - a) * mix;
+    ctx.setTransform(12, 0, 0, 12, 96, 96);
+    ctx.fillStyle = '#12432f'; ctx.fillRect(-8, -8, 121, 84);
+    for (let x = 0; x < 105; x += 10.5) {
+      ctx.fillStyle = (Math.round(x / 10.5) % 2) ? '#216f49' : '#1d6543';
+      ctx.fillRect(x, 0, 10.5, 68);
+    }
+    ctx.strokeStyle = '#e0f0dfb0'; ctx.lineWidth = .2;
+    ctx.strokeRect(0, 0, 105, 68);
+    line(52.5, 0, 52.5, 68);
+    circle(52.5, 34, 9.15); ctx.stroke();
+    circle(52.5, 34, .18); ctx.fillStyle = '#e0f0df'; ctx.fill();
+    for (const right of [false, true]) {
+      ctx.strokeRect(right ? 88.5 : 0, 13.84, 16.5, 40.32);
+      ctx.strokeRect(right ? 99.5 : 0, 24.84, 5.5, 18.32);
+      ctx.strokeRect(right ? 105 : -2, 30.34, 2, 7.32);
+      circle(right ? 94 : 11, 34, .18); ctx.fill();
+    }
+    if (state && before) {
+      if (state.trail && !state.finished) {
+        ctx.strokeStyle = '#ffdb7bd0'; ctx.lineWidth = .25; ctx.setLineDash([.8, .65]);
+        line(...state.trail.from, ...state.trail.to); ctx.setLineDash([]);
+      }
+      const focus=window.EHStory?.focus();
+      if(prefs.audience==='player'&&focus&&prefs.metrics.includes('movement')){
+        ctx.strokeStyle='#f4cf6880';ctx.lineWidth=.24;ctx.beginPath();
+        focus.movement.path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+      }
+      state.players.forEach((p, index) => {
+        const old = before.players[index];
+        const x = lerp(old.x, p.x), y = lerp(old.y, p.y);
+        if(prefs.audience==='player'&&prefs.player===`${p.team}:${p.number}`){ctx.strokeStyle='#f4cf68';ctx.lineWidth=.4;circle(x,y,1.9);ctx.stroke();}
+        if (index === state.owner) {
+          ctx.strokeStyle = '#ffe09a'; ctx.lineWidth = .22;
+          circle(x, y, 1.45); ctx.stroke();
+          ctx.strokeStyle = '#ffe09a22'; ctx.lineWidth = .12;
+          circle(x, y, 5); ctx.stroke();
+        }
+        ctx.fillStyle = '#061b2470'; circle(x + .16, y + .25, 1); ctx.fill();
+        ctx.fillStyle = p.number === 1 ? (p.team ? '#f2cd6a' : '#c4a7ff') : (p.team ? '#ed6972' : '#67bfff');
+        circle(x, y, .95); ctx.fill();
+        ctx.strokeStyle = '#f4f8ff'; ctx.lineWidth = .12; ctx.stroke();
+        ctx.fillStyle = '#091b28'; ctx.font = 'bold 1.05px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(p.number, x, y + .02);
+      });
+      const x = lerp(before.ball[0], state.ball[0]), y = lerp(before.ball[1], state.ball[1]);
+      ctx.fillStyle = '#04162170'; circle(x + .15, y + .2, .4); ctx.fill();
+      ctx.fillStyle = '#fff'; circle(x, y, .4); ctx.fill();
+      ctx.strokeStyle = '#142431'; ctx.lineWidth = .12; ctx.stroke();
+    }
+    requestAnimationFrame(draw);
+  }
+  poll(); requestAnimationFrame(draw);
+</script>
+<script src="/i18n.js"></script>
+<script src="/viewer.js"></script>
+<script src="/rhythm-lens.js"></script>
+<script src="/story.js"></script>
+<script src="/match-arc.js"></script>
+<script src="/intelligence-provenance.js"></script>
+<script src="/video.js"></script>
+<script src="/scenario.js"></script>
+<script src="/language.js"></script>
+<script src="/story-languages.js"></script>
+<script src="/enhanced-ui.js"></script></body>
+</html>
