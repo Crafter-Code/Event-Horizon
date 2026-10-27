@@ -4,7 +4,7 @@ Explainable AI match intelligence built on Azure. Event Horizon turns synthetic 
 
 ## Try the project — no installation required
 
-1. **Open the live website:** [Event Horizon on Azure](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/).
+1. **Open the live website:** [Event Horizon on Azure](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live).
 2. **Watch the demonstration:** [Event Horizon — 1 minute 49 seconds](https://youtu.be/NtMRFDtNP0Q).
 3. For the 14-section walkthrough, open the [live dashboard](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live), then select **English** and **Analyst** in section **01**.
 4. Use the numbered navigation **01–14** to move between sections. New live moments appear as the match progresses.
