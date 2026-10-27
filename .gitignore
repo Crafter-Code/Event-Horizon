@@ -23,3 +23,5 @@ Present/
 *.sqlite3*
 .venv*/
 publication-*/
+
+Rools/
