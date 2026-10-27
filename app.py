@@ -10,7 +10,7 @@ from pathlib import Path
 from queue import Queue, Empty, Full
 import threading
 import time
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, parse_qsl, urlencode, urlsplit
 from copy import deepcopy
 
 from simulation import GeneratorSettings, Match, STEP_SECONDS
@@ -46,6 +46,7 @@ from media import read_scene
 from reproducibility_lab import ReplayLab
 from journey import build as build_journey
 from intelligence_provenance import build_provenance
+from viewer_sessions import ViewerSessions, ViewerBusy, ViewerExpired
 
 
 ROOT = Path(__file__).resolve().parent
@@ -416,6 +417,17 @@ session = MatchSession()
 replay_lab = ReplayLab()
 
 
+def create_viewer_match():
+    match = MatchSession(journal=session.journal,vision_enabled=session.camera is not None,
+                         transport=ingress_from_environment())
+    match.narrator, match.narrator_status = session.narrator, session.narrator_status
+    return match
+
+
+viewer_sessions = ViewerSessions(create_viewer_match)
+
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = 'EventHorizon'
     sys_version = ''
@@ -460,6 +472,16 @@ class Handler(BaseHTTPRequestHandler):
 
     def _get(self):
         url = urlsplit(self.path)
+        scoped_paths={'/state','/event','/runs','/materials','/generator','/vision','/video/frame.png',
+                      '/agent-trace','/operations','/journey/state','/story-language','/language-proof'}
+        token=self.headers.get('X-EH-Viewer-Session')
+        query_token=parse_qs(url.query).get('viewer_session',[None])[0]
+        if query_token is not None:
+            url=url._replace(query=urlencode([(k,v) for k,v in parse_qsl(url.query,keep_blank_values=True) if k!='viewer_session']))
+        if (token or query_token) and url.path in scoped_paths:
+            try:session=viewer_sessions.get(token or query_token)
+            except ViewerExpired as error:self.send_json({'error':str(error)},410);return
+        else:session=globals()['session']
         ui_query=parse_qs(url.query)
         self.ui_language=ui_query.get('language',[self.headers.get('X-EH-Language','en')])[0]
         self.ui_audience=ui_query.get('audience',['analyst'])[0]
@@ -800,9 +822,9 @@ class Handler(BaseHTTPRequestHandler):
                 data=session.camera.snapshot(False) if session.camera else {'enabled':False}
                 data.update(match_id=session.match.match_id,run_key=session.run_key)
             self.send_json(data);return
-        elif url.path in ('/viewer.js','/i18n.js','/preferences.js','/story.js','/output.js','/video.js', '/scenario.js','/language.js','/demo.js','/studio.js','/studio-core.js','/replay-lab.js','/journey.js','/match-arc.js','/intelligence-provenance.js','/rhythm-lens.js','/story-languages.js','/global-locales.js','/global-locale.js','/enhanced-ui.js','/field-renderer.js'):
+        elif url.path in ('/viewer.js','/viewer-session.js','/i18n.js','/preferences.js','/story.js','/output.js','/video.js', '/scenario.js','/language.js','/demo.js','/studio.js','/studio-core.js','/replay-lab.js','/journey.js','/match-arc.js','/intelligence-provenance.js','/rhythm-lens.js','/story-languages.js','/global-locales.js','/global-locale.js','/enhanced-ui.js','/field-renderer.js'):
             content=(ROOT/url.path[1:]).read_bytes(); kind='text/javascript; charset=utf-8'
-        elif url.path in ('/jury-theme.css','/jury-pages.css','/match-arc.css','/intelligence-provenance.css','/rhythm-lens.css','/story-languages.css','/enhanced-ui.css'):
+        elif url.path in ('/jury-theme.css','/jury-pages.css','/match-arc.css','/intelligence-provenance.css','/rhythm-lens.css','/story-languages.css','/enhanced-ui.css','/kickoff.css'):
             content=(ROOT/url.path[1:]).read_bytes(); kind='text/css; charset=utf-8'
         elif url.path in ('/replay-lab','/replay-lab/control'):
             content=(ROOT/'replay-lab.html').read_bytes();kind='text/html; charset=utf-8'
@@ -830,6 +852,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         self.ui_language=self.headers.get('X-EH-Language','en')
+        session=globals()['session']
         if self.path in ('/restart','/editorial','/replay-lab/start','/replay-lab/stop') and not self.require_operator():return
         if self.path == '/ingest':
             token = os.getenv('EVENT_HORIZON_INGEST_TOKEN','')
@@ -841,14 +864,15 @@ class Handler(BaseHTTPRequestHandler):
                 if self.headers.get_content_type()!='application/json' or not 0<length<=MAX_BODY:
                     raise ValueError('Invalid ingress body')
                 payload = decode(self.rfile.read(length))
+                target=viewer_sessions.find_run(payload['run_key']) or session
                 with observe.incoming({k.lower():v for k,v in self.headers.items()}):
-                    result = session.receive_ingress(payload)
+                    result = target.receive_ingress(payload)
                 self.send_json(result)
             except IngressConflict as error:self.send_json({'error':str(error)},409)
             except (ValueError,UnicodeError):self.send_json({'error':'Invalid ingress envelope'},400)
             except OSError:self.send_json({'error':'Processing unavailable'},503)
             return
-        if self.path not in ('/restart', '/editorial', '/displayed', '/presentation','/replay-lab/start','/replay-lab/stop'):
+        if self.path not in ('/restart', '/editorial', '/displayed', '/presentation','/replay-lab/start','/replay-lab/stop','/viewer-session','/viewer-session/start','/viewer-session/release'):
             self.send_error(404)
             return
                                                                         
@@ -867,6 +891,21 @@ class Handler(BaseHTTPRequestHandler):
             if self.headers.get_content_type() != 'application/json' or not 0 < length <= 4096:
                 raise ValueError('Expected a small JSON object with match settings.')
             settings = json.loads(self.rfile.read(length))
+            if self.path.startswith('/viewer-session'):
+                if settings!={}:raise ValueError('Viewer session requests require an empty object')
+                try:
+                    if self.path=='/viewer-session':
+                        self.send_json({'token':viewer_sessions.create()});return
+                    token=self.headers.get('X-EH-Viewer-Session','')
+                    if self.path.endswith('/release'):
+                        viewer_sessions.release(token);self.send_json({'released':True});return
+                    target=viewer_sessions.start(token)
+                    self.send_json({'started':True,'run_key':target.run_key});return
+                except ViewerBusy as error:self.send_json({'error':str(error)},429);return
+                except ViewerExpired as error:self.send_json({'error':str(error)},410);return
+            if self.path in ('/displayed','/presentation') and self.headers.get('X-EH-Viewer-Session'):
+                try:session=viewer_sessions.get(self.headers['X-EH-Viewer-Session'])
+                except ViewerExpired as error:self.send_json({'error':str(error)},410);return
             if self.path in ('/replay-lab/start','/replay-lab/stop'):
                 try:
                     if self.path.endswith('/start'):
@@ -974,11 +1013,13 @@ def run_narrator():
     loop = asyncio.new_event_loop()
     try:
         while not stop.is_set():
-            try:
-                key, packet, trace_headers = session.ai_queue.get(timeout=.2)
-            except Empty:
-                continue
-            loop.run_until_complete(session.process_narrative_job(key,packet,trace_headers))
+            work=False
+            for target in [session,*viewer_sessions.active()]:
+                try:key,packet,trace_headers=target.ai_queue.get_nowait()
+                except Empty:continue
+                work=True
+                loop.run_until_complete(target.process_narrative_job(key,packet,trace_headers))
+            if not work:stop.wait(.2)
     finally:
         if session.narrator is not None:
             loop.run_until_complete(session.narrator.close())
@@ -1019,6 +1060,7 @@ def main():
     finally:
         stop.set()
         server.server_close()
+        viewer_sessions.close()
         worker.join(timeout=12)
         replay_worker.join(timeout=3)
         if narrator_worker:narrator_worker.join(timeout=32)

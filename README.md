@@ -10,7 +10,7 @@ Explainable AI match intelligence built on Azure. Event Horizon turns synthetic 
 4. Use the numbered navigation **01–14** to move between sections. New live moments appear as the match progresses.
 5. If the live match has ended, open [the complete match replay](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/demo). The replay does not depend on a developer's laptop.
 
-The main website opens a personal replay from **00:00**, with a short English **Kick-off** animation and automatic **1×** playback. Each browser has its own playback clock. Opening or refreshing it does not reset other viewers or the shared live simulation. Use **Live dashboard · 14 sections** to inspect the live pipeline. The direct `/demo` page keeps its manual playback controls.
+The main website and `/live` open the full **14-section dashboard** with a fresh personal live match at **00:00**, preceded by a short English **Kick-off** animation. Each page has its own event stream, calculated statistics and AI evidence. Opening or refreshing it does not reset other visitors. The server clears inactive sessions after 60 seconds and allows one personal live session at a time on the current Azure resources to protect resources; a busy visitor retries until a slot becomes available and can open `/live?shared=1` to inspect the shared live match immediately. Close the personal-match tab when finished so another judge can use it. Operator pages retain the separate shared match. The `/demo` full replay remains available independently.
 
 ### Availability for judging
 

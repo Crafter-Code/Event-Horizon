@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><script>if(location.pathname==='/'&&!location.hash)location.replace('/demo?start=1');</script><script src="/global-locales.js"></script><script src="/global-locale.js"></script><script src="/field-renderer.js"></script>
+<head><script src="/global-locales.js"></script><script src="/global-locale.js"></script><script src="/field-renderer.js"></script>
 
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -368,8 +368,8 @@
   <link rel="stylesheet" href="/intelligence-provenance.css">
   <link rel="stylesheet" href="/rhythm-lens.css">
   <link rel="stylesheet" href="/story-languages.css">
-<link rel="stylesheet" href="/enhanced-ui.css"></head>
-<body>
+<link rel="stylesheet" href="/enhanced-ui.css"><link rel="stylesheet" href="/kickoff.css"></head>
+<body><div id="kickoff-overlay" class="kickoff-overlay" role="status" aria-live="polite" lang="en" translate="no" data-source-original hidden><div class="kickoff-card"><div class="kickoff-mark" aria-hidden="true"><span class="kickoff-ball"></span></div><div class="kickoff-eyebrow">EVENT HORIZON</div><h2 class="kickoff-title">Kick-off</h2><p class="kickoff-subtitle">Your match starts at 00:00.</p></div></div>
 <main class="eh-live">
   <header>
     <div><h1>EVENT HORIZON</h1><div class="muted eyebrow">Studio · broadcast · streaming</div></div>
@@ -517,6 +517,7 @@
   <footer>Simplified 2D football model. Passes, shots, score and possession follow player actions and ball movement. Pressure measures opponent proximity, not tactical intent.</footer>
 </main>
 <script src="/preferences.js"></script>
+<script src="/viewer-session.js"></script>
 <script>
   const canvas = document.querySelector('#pitch');
   const ctx = canvas.getContext('2d');
@@ -892,6 +893,7 @@
     const epoch = requestEpoch;
     try {
       if (restarting) return;
+      await window.EHViewerSession?.ensure();
       const query = new URLSearchParams({after: lastEventId});
       query.set('view',mode); query.set('team',prefs.team); query.set('player',prefs.player);
       query.set('audience',prefs.audience);query.set('language',prefs.language);
@@ -904,14 +906,18 @@
       query.set('metrics',prefs.metrics.join(','));
       const requestStarted=performance.now();
       const response = await fetch('/state?' + query, {cache: 'no-store', signal: AbortSignal.timeout(15000)});
+      if(response.status===410&&window.EHViewerSession){window.EHViewerSession.reset();runId=null;throw Error('Personal match reconnecting');}
       if (!response.ok) throw Error('HTTP ' + response.status);
       const next = await response.json();
       window.EHRequestTiming={requestMs:performance.now()-requestStarted,receivedAt:performance.now()};
-      if (epoch === requestEpoch) {applyState(next); pollFailures = 0;}
+      if (epoch === requestEpoch) {applyState(next); pollFailures = 0;await window.EHViewerSession?.start();}
     } catch (error) {
       if (epoch === requestEpoch && !restarting) {
         pollFailures += 1;
-        document.querySelector('#connection').hidden = false;
+        const connection=document.querySelector('#connection');
+        connection.textContent=window.EHLocale?.t(error.viewerPending?error.message:'Connection lost. Showing the last received frame.')||(error.viewerPending?error.message:'Connection lost. Showing the last received frame.');
+        if(error.viewerPending){const link=document.createElement('a');link.href='/live?shared=1';link.textContent=window.EHLocale?.t('Open the shared live match')||'Open the shared live match';link.style.display='block';connection.append(link);}
+        connection.hidden = false;
       }
     } finally {
       setTimeout(poll, pollFailures ? Math.min(8000, 1000 * 2 ** Math.min(pollFailures - 1, 3)) : 250);

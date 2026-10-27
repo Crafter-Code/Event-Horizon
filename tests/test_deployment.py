@@ -29,6 +29,8 @@ class OperatorHttpTests(unittest.TestCase):
         self.environment.start()
         self.previous_lab=app.replay_lab
         app.replay_lab=app.ReplayLab(clock=lambda:0)
+        self.previous_viewers=app.viewer_sessions
+        app.viewer_sessions=app.ViewerSessions(app.create_viewer_match)
         self.previous = app.session
         app.session = app.MatchSession(wall_clock=lambda:0)
         self.server = ThreadingHTTPServer(('127.0.0.1',0),app.Handler)
@@ -38,12 +40,15 @@ class OperatorHttpTests(unittest.TestCase):
 
     def tearDown(self):
         self.server.shutdown();self.server.server_close();self.worker.join(2)
+        app.viewer_sessions.close()
+        app.viewer_sessions=self.previous_viewers
         app.session = self.previous
         app.replay_lab=self.previous_lab
         self.environment.stop()
 
-    def request(self,path,body=None,password=None,origin=None):
+    def request(self,path,body=None,password=None,origin=None,viewer=None):
         headers = {}
+        if viewer is not None:headers['X-EH-Viewer-Session']=viewer
         if password is not None:
             headers['Authorization']='Basic '+base64.b64encode(('editor:'+password).encode()).decode()
         if body is not None:headers['Content-Type']='application/json'
@@ -66,11 +71,73 @@ class OperatorHttpTests(unittest.TestCase):
         for path in ('/','/live','/demo?start=1'):
             status,_,body=self.request(path)
             self.assertEqual(status,200)
-        self.assertIn(b"location.replace('/demo?start=1')",self.request('/')[2])
+        self.assertNotIn(b"location.replace('/demo?start=1')",self.request('/')[2])
         self.assertIn(b'/enhanced-ui.js',self.request('/live')[2])
         self.assertIn(b'kickoff-overlay',self.request('/demo?start=1')[2])
         self.assertEqual((app.session.run_key,app.session.run_id,app.session.match.clock),before)
         self.assertEqual(self.request('/editor')[0],401)
+
+    def test_personal_live_matches_start_paused_and_remain_independent(self):
+        app.viewer_sessions.limit=2
+        app.viewer_sessions.factory=lambda:app.MatchSession(wall_clock=lambda:0)
+        original=app.session.run_key
+        a=json.loads(self.request('/viewer-session',{})[2])['token']
+        b=json.loads(self.request('/viewer-session',{})[2])['token']
+        first=json.loads(self.request('/state?compact=1',viewer=a)[2])
+        second=json.loads(self.request('/state?compact=1',viewer=b)[2])
+        self.assertEqual(first['clock'],0)
+        self.assertEqual(second['clock'],0)
+        self.assertNotEqual(first['run_key'],second['run_key'])
+        self.assertEqual(self.request('/viewer-session/start',{},viewer=a)[0],200)
+        app.viewer_sessions.get(a).pump(3)
+        self.assertEqual(json.loads(self.request('/state?compact=1',viewer=a)[2])['clock'],3)
+        self.assertEqual(json.loads(self.request('/state?compact=1',viewer=b)[2])['clock'],0)
+        self.assertEqual(app.session.run_key,original)
+        self.assertEqual(self.request('/restart',{},viewer=a)[0],401)
+        self.assertEqual(self.request('/editor',viewer=a)[0],401)
+
+    def test_personal_session_capacity_release_and_expiry_fail_closed(self):
+        app.viewer_sessions.limit=1
+        token=json.loads(self.request('/viewer-session',{})[2])['token']
+        self.assertEqual(self.request('/viewer-session',{})[0],429)
+        self.assertEqual(self.request('/viewer-session/release',{},viewer=token)[0],200)
+        self.assertEqual(self.request('/state?compact=1',viewer=token)[0],410)
+        self.assertEqual(self.request('/viewer-session',{})[0],200)
+        self.assertEqual(self.request('/viewer-session',{},origin='https://other.invalid')[0],403)
+        self.assertEqual(self.request('/state?compact=1',viewer='bad-token')[0],410)
+
+    def test_personal_evidence_links_resolve_the_same_run(self):
+        token=json.loads(self.request('/viewer-session',{})[2])['token']
+        key=app.viewer_sessions.get(token).run_key
+        for route in ('/agent-trace','/generator','/operations'):
+            status,_,body=self.request(route+'?viewer_session='+token)
+            self.assertEqual(status,200)
+            result=json.loads(body)
+            if 'run_key' in result:self.assertEqual(result['run_key'],key)
+        self.assertEqual(self.request('/agent-trace?viewer_session=bad')[0],410)
+
+    def test_private_functions_callback_updates_only_its_own_match(self):
+        from ingress import FunctionTransport, JsonEndpoint
+        token=__import__('secrets').token_urlsafe(32)
+        with patch.dict(os.environ,{'EVENT_HORIZON_INGEST_TOKEN':token}):
+            app.session.transport=object()
+            app.viewer_sessions.factory=lambda:app.MatchSession(wall_clock=lambda:0,transport=FunctionTransport(
+                JsonEndpoint(self.base+'/ingest',{'Authorization':'Bearer '+token},allow_local=True)))
+            viewer=json.loads(self.request('/viewer-session',{})[2])['token']
+            private=app.viewer_sessions.get(viewer)
+            private.pump(.05)
+            self.assertEqual(private.pipeline.tick,1)
+            self.assertEqual(app.session.pipeline.tick,0)
+            self.assertIsNone(private.pending_ingress)
+
+    def test_idle_viewer_is_released_and_assets_are_public(self):
+        app.viewer_sessions.clock=lambda:0
+        app.viewer_sessions.idle_seconds=1
+        viewer=json.loads(self.request('/viewer-session',{})[2])['token']
+        app.viewer_sessions.clock=lambda:2
+        self.assertEqual(self.request('/state?compact=1',viewer=viewer)[0],410)
+        for path in ('/viewer-session.js','/kickoff.css'):
+            self.assertEqual(self.request(path)[0],200)
 
     def test_compact_bootstrap_preserves_event_sequence_without_full_event_payloads(self):
         from simulation import GeneratorSettings
