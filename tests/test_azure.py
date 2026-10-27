@@ -37,6 +37,33 @@ class IngressTests(unittest.TestCase):
         self.relay.session=live
         return live
 
+    def test_delayed_delivery_catches_up_in_batches_without_skipping_ticks(self):
+        live=self.make();self.clock.now=5
+        live.pump()
+        self.assertEqual(len(self.relay.calls),1)
+        self.assertEqual(live.pipeline.tick,100)
+        local=MatchSession(wall_clock=lambda:0);local.pump(5)
+        self.assertEqual(live.confirmed_frame,local.confirmed_frame)
+        self.assertEqual(live.pipeline.events,local.pipeline.events)
+        self.assertEqual(live.generator_checks.checked_frames,101)
+
+    def test_batch_preserves_every_camera_frame_and_pixel_metrics(self):
+        live=self.make()
+        from camera import SyntheticCamera
+        live.camera=SyntheticCamera();live.camera.advance(live.match)
+        self.clock.now=2;live.pump()
+        local=MatchSession(wall_clock=lambda:0,vision_enabled=True);local.pump(2)
+        self.assertEqual(live.camera.recognizer.snapshot(),local.camera.recognizer.snapshot())
+        self.assertEqual(live.camera.evaluation.snapshot(),local.camera.evaluation.snapshot())
+
+    def test_batched_lost_ack_does_not_repeat_metrics(self):
+        live=self.make();self.clock.now=2;self.relay.drop=True;live.pump()
+        before=deepcopy(live.confirmed_frame)
+        self.clock.now=2.3;live.pump()
+        self.assertEqual(live.confirmed_frame,before)
+        self.assertEqual(live.pipeline.tick,40)
+        self.assertEqual(self.relay.calls[0],self.relay.calls[1])
+
     def test_network_outage_does_not_publish_future_frame(self):
         live=self.make();self.relay.down=True;self.clock.now=.05
         old=live.snapshot()

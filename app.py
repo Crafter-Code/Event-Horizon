@@ -11,7 +11,7 @@ from queue import Queue, Empty, Full
 import threading
 import time
 from urllib.parse import parse_qs, parse_qsl, urlencode, urlsplit
-from copy import deepcopy
+from copy import copy, deepcopy
 
 from simulation import GeneratorSettings, Match, STEP_SECONDS
 from pipeline import MatchPipeline, EventContractError
@@ -145,14 +145,23 @@ class MatchSession:
             if self.pending_ingress is None:
                 due = int(max(0, clock-self.started_at)/STEP_SECONDS+1e-8)
                 if self.match.finished or self.match.tick >= due:return
-                stopped, period = bool(self.match.restart), self.match.period
-                started = self.timing.clock()
-                self.match.advance()
+                ticks=[]
+                while self.match.tick < due and not self.match.finished and len(ticks)<100:
+                    stopped, period = bool(self.match.restart), self.match.period
+                    started = self.timing.clock()
+                    self.match.advance()
+                    frame=copy(self.match)
+                    for name,value in vars(self.match).items():
+                        if isinstance(value,(list,dict,set)):
+                            setattr(frame,name,self.match.events[:] if name=='events' else deepcopy(value))
+                    frame.event_digest=self.match.event_digest.copy()
+                    ticks.append({'match':frame,'active':not stopped and not self.match.finished and self.match.period==period,
+                                  'started':started,'validated':False})
+                    if len(self.match.events)-self.saved_count>=40:break
                 payload = envelope(self)
-                if self.match.tick == 1:payload['events'] = self.match.events[:]
+                if self.pipeline.tick == 0:payload['events'] = self.match.events[:]
                 self.pending_ingress = {'payload':payload,'digest':digest(payload),
-                    'active':not stopped and not self.match.finished and self.match.period==period,
-                    'started':started,'revision':self.insights.revision,'committed':False}
+                    'ticks':ticks,'index':0,'committed':False}
             pending = self.pending_ingress
         try:
             self.transport.submit(pending['payload'])
@@ -171,21 +180,34 @@ class MatchSession:
             logging.getLogger('event_horizon').warning('Functions delivery deferred: %s', type(error).__name__)
 
     def receive_ingress(self, payload):
+        fingerprint = digest(payload)
         with self.lock:
-            fingerprint = digest(payload)
             if self.last_ingress and fingerprint == self.last_ingress['digest']:
                 return {**self.last_ingress,'duplicate':True}
             pending = self.pending_ingress
             if pending is None or fingerprint != pending['digest']:
                 raise IngressConflict('Batch is not the current pending source tick')
-            if self.pipeline.last_error is not None:raise OSError('Pipeline stopped')
-            with observe.span('eh.ingress.commit', run_key=self.run_key, tick=self.match.tick):
-                self._commit_tick(pending['active'],pending['started'],pending['revision'],pending)
-            if self.pipeline.last_error is not None:raise OSError('Pipeline stopped')
-            pending['committed'] = True
-            self.last_ingress = {'accepted':True,'tick':payload['tick'],'digest':fingerprint,
-                                 'run_key':self.run_key,'event_count':self.confirmed_count}
-            return {**self.last_ingress,'duplicate':False}
+        while True:
+            with self.lock:
+                if self.pending_ingress is not pending:
+                    raise IngressConflict('Match changed during delivery')
+                if self.pipeline.last_error is not None:raise OSError('Pipeline stopped')
+                if pending['index']>=len(pending['ticks']):
+                    pending['committed'] = True
+                    self.last_ingress = {'accepted':True,'tick':payload['tick'],'digest':fingerprint,
+                                         'run_key':self.run_key,'event_count':self.confirmed_count}
+                    return {**self.last_ingress,'duplicate':False}
+                generated=self.match
+                item=pending['ticks'][pending['index']]
+                try:
+                    self.match=item['match']
+                    with observe.span('eh.ingress.commit',run_key=self.run_key,tick=self.match.tick):
+                        self._commit_tick(item['active'],item['started'],self.insights.revision,item)
+                    if self.pipeline.last_error is not None:raise OSError('Pipeline stopped')
+                    pending['index']+=1
+                finally:
+                    self.match=generated
+            time.sleep(0)
 
     def restart(self, seed=None, scenario=None):
         with self.lock:
