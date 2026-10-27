@@ -4,9 +4,10 @@ Explainable AI match intelligence built on Azure. Event Horizon turns synthetic 
 
 ## Try the project — no installation required
 
-1. **Open the live website:** [Event Horizon on Azure](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live).
+1. **Open the live website:** [Event Horizon on Azure](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live?shared=1).
+   To start at **00:00**, open a [personal match](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live). One personal session is available at a time; close its tab when finished.
 2. **Watch the demonstration:** [Event Horizon — 1 minute 49 seconds](https://youtu.be/NtMRFDtNP0Q).
-3. For the 14-section walkthrough, open the [live dashboard](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live), then select **English** and **Analyst** in section **01**.
+3. For the 14-section walkthrough, open the [live dashboard](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live?shared=1), then select **English** and **Analyst** in section **01**.
 4. Use the numbered navigation **01–14** to move between sections. New live moments appear as the match progresses.
 5. If the live match has ended, open [the complete match replay](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/demo). The replay does not depend on a developer's laptop.
 
@@ -37,7 +38,7 @@ The analysis, writing, and fact-checking agents have separate roles and share ev
 
 ## Judge walkthrough — all 14 sections
 
-Use the numbered navigation on the [live dashboard](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live). Start with English and Analyst mode. Live episodes appear as the match progresses; the full replay remains available after full time. Viewer access is public. Editorial mutation controls require an operator account and are not part of anonymous viewer access.
+Use the numbered navigation on the [live dashboard](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live?shared=1). Start with English and Analyst mode. Live episodes appear as the match progresses; the full replay remains available after full time. Viewer access is public. Editorial mutation controls require an operator account and are not part of anonymous viewer access.
 
 Open the website and follow sections 01–14. Start with English and Analyst mode. Operator access is required for server-side tests and editorial changes.
 
