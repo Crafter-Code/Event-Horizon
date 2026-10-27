@@ -255,7 +255,7 @@ class FoundryTests(unittest.TestCase):
     def test_writer_cannot_bypass_analyst_selection(self):
         packet, draft = self.packet_and_draft()
         analyst = FakeAgent([{'evidence_ids': [packet['evidence_ids'][-1]]}])
-        writer = FakeAgent([draft])
+        writer = FakeAgent([draft, draft])
         verifier = FakeAgent([])
         narrator = FoundryNarrator(analyst, writer, verifier)
         with self.assertRaises(ValueError):
