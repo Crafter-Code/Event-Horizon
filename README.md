@@ -6,9 +6,11 @@ Explainable AI match intelligence built on Azure. Event Horizon turns synthetic 
 
 1. **Open the live website:** [Event Horizon on Azure](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/).
 2. **Watch the demonstration:** [Event Horizon — 1 minute 49 seconds](https://youtu.be/NtMRFDtNP0Q).
-3. Select **English** and **Analyst** in section **01** to start the walkthrough below.
+3. For the 14-section walkthrough, open the [live dashboard](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live), then select **English** and **Analyst** in section **01**.
 4. Use the numbered navigation **01–14** to move between sections. New live moments appear as the match progresses.
 5. If the live match has ended, open [the complete match replay](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/demo). The replay does not depend on a developer's laptop.
+
+The main website opens a personal replay from **00:00**, with a short English **Kick-off** animation and automatic **1×** playback. Each browser has its own playback clock. Opening or refreshing it does not reset other viewers or the shared live simulation. Use **Live dashboard · 14 sections** to inspect the live pipeline. The direct `/demo` page keeps its manual playback controls.
 
 ### Availability for judging
 
@@ -35,7 +37,7 @@ The analysis, writing, and fact-checking agents have separate roles and share ev
 
 ## Judge walkthrough — all 14 sections
 
-Use the numbered navigation on the hosted project. Start with English and Analyst mode. Live episodes appear as the match progresses; the full replay remains available after full time. Viewer access is public. Editorial mutation controls require an operator account and are not part of anonymous viewer access.
+Use the numbered navigation on the [live dashboard](https://ehdemo-app.icypond-d7044f5d.swedencentral.azurecontainerapps.io/live). Start with English and Analyst mode. Live episodes appear as the match progresses; the full replay remains available after full time. Viewer access is public. Editorial mutation controls require an operator account and are not part of anonymous viewer access.
 
 Open the website and follow sections 01–14. Start with English and Analyst mode. Operator access is required for server-side tests and editorial changes.
 

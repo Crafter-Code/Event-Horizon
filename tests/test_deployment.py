@@ -55,11 +55,22 @@ class OperatorHttpTests(unittest.TestCase):
             with error:return error.code,error.headers,error.read()
 
     def test_public_viewing_and_health_need_no_editor_password(self):
-        for path in ('/','/state?compact=1','/health/live','/health/ready'):
+        for path in ('/','/live','/demo?start=1','/state?compact=1','/health/live','/health/ready'):
             status,_,body=self.request(path)
             self.assertEqual(status,200,path)
             self.assertNotIn(self.password.encode(),body)
         self.assertIn(b'data-operator-required="true"',self.request('/')[2])
+
+    def test_personal_entry_keeps_live_dashboard_and_operator_protection(self):
+        before=(app.session.run_key,app.session.run_id,app.session.match.clock)
+        for path in ('/','/live','/demo?start=1'):
+            status,_,body=self.request(path)
+            self.assertEqual(status,200)
+        self.assertIn(b"location.replace('/demo?start=1')",self.request('/')[2])
+        self.assertIn(b'/enhanced-ui.js',self.request('/live')[2])
+        self.assertIn(b'kickoff-overlay',self.request('/demo?start=1')[2])
+        self.assertEqual((app.session.run_key,app.session.run_id,app.session.match.clock),before)
+        self.assertEqual(self.request('/editor')[0],401)
 
     def test_compact_bootstrap_preserves_event_sequence_without_full_event_payloads(self):
         from simulation import GeneratorSettings

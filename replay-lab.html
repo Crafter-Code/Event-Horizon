@@ -6,7 +6,7 @@
 </style><link rel="stylesheet" href="/jury-theme.css">
 <link rel="stylesheet" href="/jury-pages.css">
 <link rel="stylesheet" href="/enhanced-ui.css"></head><body>
-<header><div class="brand">EVENT<span>HORIZON</span></div><nav aria-label="Main navigation"><a href="/">Live match</a><a href="/demo">Full replay</a><a href="/studio">Broadcast rehearsal</a></nav></header>
+<header><div class="brand">EVENT<span>HORIZON</span></div><nav aria-label="Main navigation"><a href="/live">Live match</a><a href="/demo">Full replay</a><a href="/studio">Broadcast rehearsal</a></nav></header>
 <main class="eh-replay"><div class="eyebrow">Replay Lab · Synthetic football</div><h1>Same match.<br>Different delivery.</h1><p class="muted">Two independent generators. One set of settings. Watch events and statistics stay identical when delivery becomes uneven, then run the same match again.</p>
 <div id="readonly" hidden><p class="muted">View the current verification here. An editor can start or stop a shared run.</p><a href="/replay-lab/control">Open editor controls</a></div>
 <form id="controls" class="controls"><label>Seed<input id="seed" type="number" min="0" max="4294967295" value="42" step="1" required></label><label>Match excerpt<select id="duration"><option value="30">30 seconds</option><option value="120" selected>2 minutes</option><option value="300">5 minutes</option></select></label><label>Playback<select id="speed"><option value="8">8× demonstration</option><option value="1">1× real time</option></select></label><button class="primary" id="start" type="submit">Compare runs</button><button id="stop-run" type="button" disabled>Stop</button></form>

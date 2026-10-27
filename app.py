@@ -818,7 +818,7 @@ class Handler(BaseHTTPRequestHandler):
             content=(ROOT/'output.html').read_bytes();kind='text/html; charset=utf-8'
         elif url.path in ('/schemas/material.schema.json','/schemas/overlay.schema.json','/schemas/recognition.schema.json'):
             content=(ROOT/url.path[1:]).read_bytes();kind='application/json; charset=utf-8'
-        elif url.path in ('/', '/editor'):
+        elif url.path in ('/', '/live', '/editor'):
             content = (ROOT / 'index.html').read_bytes()
             if operator_access.required():
                 content = content.replace(b'<body>',b'<body data-operator-required="true">',1)
