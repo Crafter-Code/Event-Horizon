@@ -77,7 +77,7 @@
   function draw(ctx,canvas){
     if(!state?.vision?.enabled)return false;
     ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
-    if(!observation||performance.now()-lastAt>2000&&!state.finished){ctx.fillStyle='#122638';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#f0d99d';ctx.font='32px system-ui';const message=copy[globalThis.EHLocale?.base(window.EHSettings().language)??window.EHSettings().language].lost;ctx.fillText(window.EHLocale?.t(message)||message,65,100);return true;}
+    if(!observation){ctx.fillStyle='#122638';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#f0d99d';ctx.font='32px system-ui';const message=copy[globalThis.EHLocale?.base(window.EHSettings().language)??window.EHSettings().language].lost;ctx.fillText(window.EHLocale?.t(message)||message,65,100);return true;}
     const shown=motion.sample();if(canvas.dataset.renderClock!==String(shown.time))canvas.dataset.renderFrames=++renderedFrames;canvas.dataset.renderClock=shown.time;canvas.dataset.sourceClock=observation.time;return window.EHField.draw(ctx,canvas,shown,window.EHSettings(),thresholds);
   }
   window.EHVideo={update,draw};
