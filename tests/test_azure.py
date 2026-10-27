@@ -280,7 +280,9 @@ class FunctionSdkTests(unittest.TestCase):
         transport=FunctionTransport(JsonEndpoint(f'http://127.0.0.1:{function_server.server_port}/api/events',allow_local=True))
         backend=JsonEndpoint(app_url+'/ingest',{'Authorization':'Bearer '+secret},allow_local=True)
         try:
-            with patch.dict(os.environ,{'EVENT_HORIZON_INGEST_TOKEN':secret}),patch.object(self.module,'backend',return_value=backend):
+            with patch.dict(os.environ,{'EVENT_HORIZON_INGEST_TOKEN':secret,
+                    'EVENT_HORIZON_BIND':'127.0.0.1','EVENT_HORIZON_PUBLIC_ORIGIN':'',
+                    'EVENT_HORIZON_OPERATOR_PASSWORD':''}),patch.object(self.module,'backend',return_value=backend):
                 live=MatchSession(wall_clock=clock,transport=transport);application.session=live
                 for tick in range(1,101):clock.now=tick*.05;live.pump()
                 local=MatchSession(wall_clock=lambda:0);local.pump(5)
