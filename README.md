@@ -12,7 +12,7 @@ python3 -B full_match_acceptance.py --output data/full-match.sqlite3
 python3 -B app.py
 ```
 
-Open `http://127.0.0.1:8000/`. Archive generation runs a complete synthetic match and its acceptance checks; it can take several minutes. Generated databases and local recordings are intentionally excluded from Git.
+Open `http://127.0.0.1:8000/`. The default local run uses factual explanations; cloud AI requires your own Foundry configuration. Archive generation runs a complete synthetic match and its acceptance checks; it can take several minutes. Generated databases and local recordings are intentionally excluded from Git.
 
 For the Azure/Foundry integration, install the pinned dependencies:
 
@@ -26,7 +26,8 @@ Build the container after generating the archive:
 
 ```sh
 docker build -t event-horizon .
-docker run --rm -p 8000:8000 event-horizon
+export EVENT_HORIZON_OPERATOR_PASSWORD="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
+docker run --rm -p 127.0.0.1:8000:8000 -e EVENT_HORIZON_OPERATOR_PASSWORD event-horizon
 ```
 
 ## Architecture
